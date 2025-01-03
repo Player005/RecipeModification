@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("xyz.wagyourtail.unimined") version "1.2.6"
+    id("xyz.wagyourtail.unimined") version "1.3.12"
 }
 
 repositories {
@@ -39,8 +39,13 @@ unimined.minecraft {
     version(minecraftVersion)
     side("combined")
 
+    accessWidener {
+        accessWidener("src/main/resources/recipe_modification.accesswidener")
+    }
+
     mappings {
         mojmap(minecraftVersion)
+        //parchment(minecraftVersion, parchmentVersion)
         devFallbackNamespace("official")
     }
 
@@ -61,7 +66,7 @@ unimined.minecraft(sourceSets.create("neoforge")) {
     val neoforgeVersion: String by properties
 
     combineWith(sourceSets.main.get())
-    neoForged {
+    neoForge {
         loader(neoforgeVersion)
         accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
     }
