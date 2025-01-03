@@ -1,0 +1,69 @@
+plugins {
+    id("java")
+    id("xyz.wagyourtail.unimined") version "1.2.6"
+}
+
+repositories {
+    mavenCentral()
+    unimined.wagYourMaven("releases")
+    unimined.fabricMaven()
+    unimined.neoForgedMaven()
+}
+
+dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+
+    withSourcesJar()
+}
+
+group = properties["group"].toString()
+version = properties["version"].toString()
+base.archivesName = properties["modid"].toString()
+
+unimined.minecraft {
+    val minecraftVersion: String by properties
+    val parchmentVersion: String by properties
+
+    version(minecraftVersion)
+    side("combined")
+
+    mappings {
+        mojmap(minecraftVersion)
+        devFallbackNamespace("official")
+    }
+
+}
+
+unimined.minecraft(sourceSets.create("fabric")) {
+    val fabricVersion: String by properties
+
+    combineWith(sourceSets.main.get())
+    fabric {
+        loader(fabricVersion)
+        accessWidener("src/main/resources/recipe_modification.accesswidener")
+    }
+    defaultRemapJar = true
+}
+
+unimined.minecraft(sourceSets.create("neoforge")) {
+    val neoforgeVersion: String by properties
+
+    combineWith(sourceSets.main.get())
+    neoForged {
+        loader(neoforgeVersion)
+        accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
+    }
+    defaultRemapJar = true
+}
