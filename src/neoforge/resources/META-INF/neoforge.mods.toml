@@ -1,0 +1,27 @@
+modLoader = "javafml"
+loaderVersion = "*"
+
+license = "${license}"
+
+[[mods]]
+modId = "${modid}"
+version = "${version}"
+displayName = "${name}"
+
+logoFile = "icon.png"
+description = '''${description}'''
+
+[[dependencies.${modid}]]
+modId = "minecraft"
+versionRange = ""
+side = "BOTH"
+
+# Specify additional dependencies like this:
+#[[dependencies.${mod_id}]]
+#modId = "my_dependency_mod"
+#mandatory = true # if the dependency is required or optional
+#versionRange = "[min_version,max_version)" # maven version range of the dependency
+#side = "BOTH" # required on both client and server
+
+[[mixins]]
+config = "recipe_modification.mixins.json"

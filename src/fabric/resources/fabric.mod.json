@@ -2,5 +2,8 @@
   "schemaVersion": 1,
   "id": "${modid}",
   "version": "${version}",
-  "name": "${name}"
+  "name": "${name}",
+  "entrypoints": {
+    "main": ["net.player005.recipe_modification.ModFabric"]
+  }
 }
