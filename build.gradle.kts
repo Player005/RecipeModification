@@ -13,6 +13,7 @@ repositories {
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
 
     implementation("org.jetbrains:annotations:26.0.1")
 
@@ -75,6 +76,10 @@ unimined.minecraft(sourceSets.create("neoforge")) {
         accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
     }
     defaultRemapJar = true
+}
+
+unimined.minecraft(sourceSets.test.get()) {
+    combineWith(sourceSets.getByName("fabric"))
 }
 
 tasks.getByName<ProcessResources>("processFabricResources") {

@@ -11,7 +11,7 @@ displayName = "${name}"
 logoFile = "icon.png"
 description = '''${description}'''
 
-[[dependencies.${modid}]]
+[[dependencies]]
 modId = "minecraft"
 versionRange = ""
 side = "BOTH"
