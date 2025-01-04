@@ -106,8 +106,7 @@ public abstract class RecipeModification {
      * @throws IllegalStateException if the recipe manager isn't initialised yet (see {@link #getRecipeManager()})
      */
     public static RecipeHolder<?> getByID(ResourceLocation id) {
-        if (recipeManager == null)
-            throw new IllegalStateException("tried to get recipe before RecipeManager was initialised");
+        checkInitialised("get recipe by ID");
         return ((RecipeManagerAccessor) recipeManager).getByName().get(id);
     }
 
@@ -126,8 +125,7 @@ public abstract class RecipeModification {
      * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      */
     public static HolderLookup.Provider getRegistryAccess() {
-        if (recipeManager == null)
-            throw new IllegalStateException("Tried to get registry access from RecipeModification before RecipeManager was initialised");
+        checkInitialised("get the RecipeManager's registry access");
         return ((RecipeManagerAccessor) recipeManager).getRegistries();
     }
 
@@ -136,9 +134,11 @@ public abstract class RecipeModification {
      * Can only be called after recipe initialisation (i.e. after {@link #onRecipeInit(Consumer)}
      * callbacks were called).
      *
+     * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      * @see #getRecipesByResult(Item)
      */
     public static ImmutableMultimap<Item, RecipeHolder<?>> getRecipesByResult() {
+        checkInitialised("get recipes by result map");
         return recipesByResult;
     }
 
@@ -147,9 +147,11 @@ public abstract class RecipeModification {
      * Can only be called after recipe initialisation (i.e. after {@link #onRecipeInit(Consumer)}
      * callbacks were called).
      *
+     * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      * @see #getRecipesByResult()
      */
     public static ImmutableCollection<RecipeHolder<?>> getRecipesByResult(Item resultItem) {
+        checkInitialised("get recipe by result");
         return recipesByResult.get(resultItem);
     }
 
@@ -163,6 +165,12 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     static void updateJsonRecipeModifiers(NonNullList<RecipeModifier> modifiers) {
         recipeModifiersFromDatapack = modifiers;
+    }
+
+    private static void checkInitialised(String action) {
+        if (recipeManager == null)
+            throw new IllegalStateException("Can't " + action + " before recipes are initialised." +
+                    "Maybe you need to use RecipeManager#onRecipeInit() ?");
     }
 
     @ApiStatus.Internal
