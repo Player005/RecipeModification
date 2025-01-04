@@ -15,7 +15,9 @@ import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -36,7 +38,8 @@ public abstract class RecipeModification {
     private static final Map<RecipeFilter, Consumer<RecipeHolder<?>>> filteredRecipeCallbacks = new HashMap<>();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
-    private static NonNullList<RecipeModifier> modifiers = NonNullList.create();
+    private static final NonNullList<RecipeModifier> modifiers = NonNullList.create();
+    private static NonNullList<RecipeModifier> recipeModifiersFromDatapack;
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
 
@@ -109,12 +112,71 @@ public abstract class RecipeModification {
     }
 
     /**
+     * Returns the Minecraft server's {@link RecipeManager} saved by this class - might be {@code null} in some cases
+     * (when the game is not fully initialised yet). <p>Safe to call after the {@link #onRecipeInit(Consumer)} callbacks
+     * were called
+     */
+    public static @UnknownNullability RecipeManager getRecipeManager() {
+        return recipeManager;
+    }
+
+    /**
+     * Returns the {@link RecipeManager}s registry access (a {@link HolderLookup.Provider})
+     *
+     * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
+     */
+    public static HolderLookup.Provider getRegistryAccess() {
+        if (recipeManager == null)
+            throw new IllegalStateException("Tried to get registry access from RecipeModification before RecipeManager was initialised");
+        return ((RecipeManagerAccessor) recipeManager).getRegistries();
+    }
+
+    /**
+     * Get an (immutable) multimap from the result item to the recipes creating that item.
+     * Can only be called after recipe initialisation (i.e. after {@link #onRecipeInit(Consumer)}
+     * callbacks were called).
+     *
+     * @see #getRecipesByResult(Item)
+     */
+    public static ImmutableMultimap<Item, RecipeHolder<?>> getRecipesByResult() {
+        return recipesByResult;
+    }
+
+    /**
+     * Returns all recipes that create the given result item.
+     * Can only be called after recipe initialisation (i.e. after {@link #onRecipeInit(Consumer)}
+     * callbacks were called).
+     *
+     * @see #getRecipesByResult()
+     */
+    public static ImmutableCollection<RecipeHolder<?>> getRecipesByResult(Item resultItem) {
+        return recipesByResult.get(resultItem);
+    }
+
+    public static List<RecipeModifier> getAllModifiers() {
+        var fullList = new ArrayList<RecipeModifier>(modifiers.size() + recipeModifiersFromDatapack.size());
+        fullList.addAll(modifiers);
+        fullList.addAll(recipeModifiersFromDatapack);
+        return fullList;
+    }
+
+    @ApiStatus.Internal
+    static void updateJsonRecipeModifiers(NonNullList<RecipeModifier> modifiers) {
+        recipeModifiersFromDatapack = modifiers;
+    }
+
+    @ApiStatus.Internal
+    static void init() {
+
+    }
+
+    /**
      * Internal method that should be called on every datapack reload.
      * Initialises all registered {@link RecipeModifier}s, calls all {@link #onRecipeInit(Consumer)}
      * callbacks and removes recipes registered for removal using {@link #removeRecipe(RecipeHolder)}
      */
     @ApiStatus.Internal
-    public static void init(RecipeManager recipeManager) {
+    public static void onRecipeManagerLoad(RecipeManager recipeManager) {
         RecipeModification.recipeManager = recipeManager;
         var timer = Stopwatch.createStarted();
 
@@ -149,7 +211,7 @@ public abstract class RecipeModification {
             }
 
             // apply recipe modifiers
-            for (RecipeModifier modifier : modifiers) {
+            for (RecipeModifier modifier : getAllModifiers()) {
                 if (!modifier.getFilter().shouldApply(recipeHolder, registryAccess)) continue;
                 var helper = new ModificationHelper(recipeHolder);
                 modifier.apply(recipeHolder.value(), helper);
@@ -167,50 +229,4 @@ public abstract class RecipeModification {
         logger.info("Modified {} recipes in {}", modified, timer);
     }
 
-    @ApiStatus.Internal
-    static void updateModifiers(NonNullList<RecipeModifier> modifiers) {
-        RecipeModification.modifiers = modifiers;
-    }
-
-    /**
-     * Returns the Minecraft server's {@link RecipeManager} saved by this class - might be {@code null} in some cases
-     * (when the game is not fully initialised yet). <p>Safe to call after the {@link #onRecipeInit(Consumer)} callbacks
-     * were called
-     */
-    public static @UnknownNullability RecipeManager getRecipeManager() {
-        return recipeManager;
-    }
-
-    /**
-     * Returns the {@link RecipeManager}s registry access (a {@link HolderLookup.Provider})
-     *
-     * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
-     */
-    public static HolderLookup.@UnknownNullability Provider getRegistryAccess() {
-        if (recipeManager == null)
-            throw new IllegalStateException("Tried to get registry access from RecipeModification before RecipeManager was initialised");
-        return ((RecipeManagerAccessor) recipeManager).getRegistries();
-    }
-
-    /**
-     * Get an (immutable) multimap from the result item to the recipes creating that item.
-     * Can only be called after recipe initialisation (i.e. after {@link #onRecipeInit(Consumer)}
-     * callbacks were called).
-     *
-     * @see #getRecipesByResult(Item)
-     */
-    public static ImmutableMultimap<Item, RecipeHolder<?>> getRecipesByResult() {
-        return recipesByResult;
-    }
-
-    /**
-     * Returns all recipes that create the given result item.
-     * Can only be called after recipe initialisation (i.e. after {@link #onRecipeInit(Consumer)}
-     * callbacks were called).
-     *
-     * @see #getRecipesByResult()
-     */
-    public static ImmutableCollection<RecipeHolder<?>> getRecipesByResult(Item resultItem) {
-        return recipesByResult.get(resultItem);
-    }
 }

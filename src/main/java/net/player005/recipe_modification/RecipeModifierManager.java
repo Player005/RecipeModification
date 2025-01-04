@@ -38,6 +38,6 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
             }
         }
 
-        RecipeModification.updateModifiers(list);
+        RecipeModification.updateJsonRecipeModifiers(list);
     }
 }
