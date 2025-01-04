@@ -13,6 +13,8 @@ repositories {
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+
+    compileOnly("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
 }
 
 tasks.test {
