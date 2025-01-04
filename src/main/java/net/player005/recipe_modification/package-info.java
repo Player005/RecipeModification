@@ -1,5 +1,4 @@
-@NonnullDefault
-
+@NotNullByDefault
 package net.player005.recipe_modification;
 
-import org.lwjgl.system.NonnullDefault;
+import org.jetbrains.annotations.NotNullByDefault;
