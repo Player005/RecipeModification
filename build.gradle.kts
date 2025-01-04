@@ -74,3 +74,15 @@ unimined.minecraft(sourceSets.create("neoforge")) {
     }
     defaultRemapJar = true
 }
+
+tasks.getByName<ProcessResources>("processFabricResources") {
+    filesMatching("fabric.mod.json") {
+        expand(properties)
+    }
+}
+
+tasks.getByName<ProcessResources>("processNeoforgeResources") {
+    filesMatching("neoforge.mods.toml") {
+        expand(properties)
+    }
+}
