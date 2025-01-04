@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.player005.recipe_modification.mixin.RecipeManagerAccessor;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
@@ -27,7 +28,8 @@ import java.util.function.Consumer;
  */
 public abstract class RecipeModification {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
+    static final String modID = "recipe_modification";
+    static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
     private static final NonNullList<Consumer<RecipeHolder<?>>> recipeIterationCallbacks = NonNullList.create();
@@ -96,6 +98,17 @@ public abstract class RecipeModification {
     }
 
     /**
+     * Returns recipe associated with the given id, or null if no recipe with that id is loaded
+     *
+     * @throws IllegalStateException if the recipe manager isn't initialised yet (see {@link #getRecipeManager()})
+     */
+    public static RecipeHolder<?> getByID(ResourceLocation id) {
+        if (recipeManager == null)
+            throw new IllegalStateException("tried to get recipe before RecipeManager was initialised");
+        return ((RecipeManagerAccessor) recipeManager).getByName().get(id);
+    }
+
+    /**
      * Internal method that should be called on every datapack reload.
      * Initialises all registered {@link RecipeModifier}s, calls all {@link #onRecipeInit(Consumer)}
      * callbacks and removes recipes registered for removal using {@link #removeRecipe(RecipeHolder)}
@@ -124,14 +137,14 @@ public abstract class RecipeModification {
         var modified = 0;
 
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
-            var registryAccess = recipeManager.registries;
+            final var registryAccess = getRegistryAccess();
 
             // call registered callbacks
             for (Consumer<RecipeHolder<?>> recipeIterationCallback : recipeIterationCallbacks) {
                 recipeIterationCallback.accept(recipeHolder);
             }
 
-            for (var entry : filteredRecipeCallbacks.entrySet()) {
+            for (final var entry : filteredRecipeCallbacks.entrySet()) {
                 if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
             }
 
@@ -169,11 +182,14 @@ public abstract class RecipeModification {
     }
 
     /**
-     * Returns the {@link RecipeManager}s registry access (a {@link HolderLookup.Provider}) -
-     * might be {@code null} in some cases (see {@link #getRecipeManager()} docs)
+     * Returns the {@link RecipeManager}s registry access (a {@link HolderLookup.Provider})
+     *
+     * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      */
     public static HolderLookup.@UnknownNullability Provider getRegistryAccess() {
-        return recipeManager.registries;
+        if (recipeManager == null)
+            throw new IllegalStateException("Tried to get registry access from RecipeModification before RecipeManager was initialised");
+        return ((RecipeManagerAccessor) recipeManager).getRegistries();
     }
 
     /**

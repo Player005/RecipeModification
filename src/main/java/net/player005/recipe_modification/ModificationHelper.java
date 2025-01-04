@@ -5,11 +5,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.player005.recipe_modification.mixin.IngredientExtension;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * A helper class for modifying recipes easily.
@@ -83,9 +82,7 @@ public class ModificationHelper {
      * (effectively replacing the entire ingredient)
      */
     public void replaceIngredientValues(Ingredient ingredient, Ingredient.Value[] ingredientValues) {
-        if (ingredient.values == ingredientValues) return;
-        ingredient.values = ingredientValues;
-        updateIngredientValues(ingredient);
+        ((IngredientExtension) (Object) ingredient).replaceValues(ingredientValues);
     }
 
     /**
@@ -94,7 +91,7 @@ public class ModificationHelper {
      * to copy the data from the new ingredient to the existing one.
      */
     public void replaceIngredient(Ingredient old, Ingredient newIngredient) {
-        replaceIngredientValues(old, newIngredient.values);
+        replaceIngredientValues(old, ((IngredientExtension) (Object) newIngredient).getValues());
     }
 
     /**
@@ -102,10 +99,7 @@ public class ModificationHelper {
      * If the given value is the only one in the Ingredient, the recipe might become impossible to make.
      */
     public void removeIngredientValue(Ingredient ingredient, Ingredient.Value toRemove) {
-        var values = new ArrayList<>(List.of(ingredient.values));
-        values.remove(toRemove);
-        //noinspection DataFlowIssue TODO: confirm this works
-        replaceIngredientValues(ingredient, (Ingredient.Value[]) values.toArray());
+        ((IngredientExtension) (Object) ingredient).removeValue(toRemove);
     }
 
     /**
@@ -113,21 +107,12 @@ public class ModificationHelper {
      * alternative item to use for the ingredient/recipe.
      */
     public void addIngredientValue(Ingredient ingredient, Ingredient.Value addedValue) {
-        if (ArrayUtils.contains(ingredient.values, addedValue)) return;
-        var values = Arrays.copyOf(ingredient.values, ingredient.values.length + 1);
-        values[values.length - 1] = addedValue;
-        replaceIngredientValues(ingredient, values);
-    }
+        var values = ((IngredientExtension) (Object) ingredient).getValues();
+        if (ArrayUtils.contains(values, addedValue)) return;
 
-    /**
-     * Resets some cached values from vanilla Ingredients.
-     * Call this after modifying {@link Ingredient#values}.
-     */
-    private void updateIngredientValues(Ingredient ingredient) {
-        ingredient.stackingIds = null;
-        // idea complains about this for some reason
-        // noinspection DataFlowIssue
-        ingredient.itemStacks = null;
+        var newValues = Arrays.copyOf(values, values.length + 1);
+        newValues[newValues.length - 1] = addedValue;
+        replaceIngredientValues(ingredient, newValues);
     }
 
     public RecipeHolder<?> getRecipeHolder() {
