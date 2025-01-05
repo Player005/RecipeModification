@@ -18,6 +18,7 @@ dependencies {
     implementation("org.jetbrains:annotations:26.0.1")
 
     compileOnly("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
+    implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 }
 
 tasks.test {
