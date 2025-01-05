@@ -6,7 +6,9 @@
   "mixins": [
     "IngredientMixin",
     "RecipeManagerAccessor",
-    "RecipeManagerMixin"
+    "RecipeManagerMixin",
+    "RecipeMixin",
+    "RecipeMixin2"
   ],
   "client": [],
   "server": [],

@@ -4,11 +4,15 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.player005.recipe_modification.mixin.IngredientExtension;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A helper class for modifying recipes easily.
@@ -17,6 +21,9 @@ import java.util.Arrays;
  * @see RecipeModifier
  */
 public class ModificationHelper {
+
+    @ApiStatus.Internal
+    public static final Map<Recipe<?>, ItemStack> MODIFIED_RESULT_ITEMS = new HashMap<>();
 
     private final RecipeHolder<?> recipeHolder;
 
@@ -83,6 +90,20 @@ public class ModificationHelper {
      */
     public void replaceIngredientValues(Ingredient ingredient, Ingredient.Value[] ingredientValues) {
         ((IngredientExtension) (Object) ingredient).replaceValues(ingredientValues);
+    }
+
+    /**
+     * Replaces the given ingredient with a new {@link Item} ingredient.
+     */
+    public void replaceIngredient(Ingredient ingredient, Item item) {
+        replaceIngredientValues(ingredient, new Ingredient.ItemValue[]{new Ingredient.ItemValue(item.getDefaultInstance())});
+    }
+
+    /**
+     * Replaces the given ingredient with a new item tag ingredient.
+     */
+    public void replaceIngredient(Ingredient ingredient, TagKey<Item> tag) {
+        replaceIngredientValues(ingredient, new Ingredient.TagValue[]{new Ingredient.TagValue(tag)});
     }
 
     /**
