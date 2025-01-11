@@ -17,7 +17,7 @@ versionRange = ""
 side = "BOTH"
 
 # Specify additional dependencies like this:
-#[[dependencies.${mod_id}]]
+#[[dependencies.${modid}]]
 #modId = "my_dependency_mod"
 #mandatory = true # if the dependency is required or optional
 #versionRange = "[min_version,max_version)" # maven version range of the dependency

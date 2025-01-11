@@ -77,7 +77,7 @@ tasks.getByName<ProcessResources>("processFabricResources") {
 }
 
 tasks.getByName<ProcessResources>("processNeoforgeResources") {
-    filesMatching("neoforge.mods.toml") {
+    filesMatching("META-INF/neoforge.mods.toml") {
         expand(properties)
     }
 }
