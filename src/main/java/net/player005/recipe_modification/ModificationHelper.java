@@ -2,7 +2,6 @@ package net.player005.recipe_modification;
 
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.player005.recipe_modification.mixin.IngredientAccessor;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;

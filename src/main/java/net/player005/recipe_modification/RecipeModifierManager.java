@@ -1,9 +1,6 @@
 package net.player005.recipe_modification;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
@@ -29,16 +26,26 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
 
         for (Map.Entry<ResourceLocation, JsonElement> entry : object.entrySet()) {
             var id = entry.getKey();
-            System.out.println(entry.getValue());
 
             try {
-                RecipeModifierHolder recipeModifier = null; // TODO
-                list.add(recipeModifier);
-            } catch (IllegalArgumentException | JsonParseException exception) {
-                LOGGER.error("Parsing error loading recipe modifier {}", id, exception);
+                list.add(deserializeModifier(id, entry.getValue().getAsJsonObject()));
+            } catch (Exception exception) {
+                LOGGER.error("Error loading recipe modifier {}:", id, exception);
             }
         }
 
         RecipeModification.updateJsonRecipeModifiers(list);
+    }
+
+    private RecipeModifierHolder deserializeModifier(ResourceLocation id, JsonObject json) {
+        return new RecipeModifierHolder(id, deserializeRecipeFilter(json.get("target_recipes")), deserializeModifiers(json.get("modifiers")));
+    }
+
+    private ModificationSet deserializeModifiers(JsonElement modifiers) {
+        return ModificationSet.Serialization.fromJson(modifiers);
+    }
+
+    private RecipeFilter deserializeRecipeFilter(JsonElement targetRecipes) {
+        return RecipeFilter.Serialization.fromJson(targetRecipes);
     }
 }

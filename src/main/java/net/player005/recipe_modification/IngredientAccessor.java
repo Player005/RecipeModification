@@ -1,4 +1,4 @@
-package net.player005.recipe_modification.mixin;
+package net.player005.recipe_modification;
 
 import net.minecraft.world.item.crafting.Ingredient;
 
