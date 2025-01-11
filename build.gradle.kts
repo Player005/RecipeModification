@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    id("java-library")
     id("xyz.wagyourtail.unimined") version "1.3.12"
 }
 
@@ -11,20 +11,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
-
     implementation("org.jetbrains:annotations:26.0.1")
 
     compileOnly("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 }
-
-tasks.test {
-    useJUnitPlatform()
-}
-
 
 java {
     toolchain {
@@ -77,10 +68,6 @@ unimined.minecraft(sourceSets.create("neoforge")) {
         accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
     }
     defaultRemapJar = true
-}
-
-unimined.minecraft(sourceSets.test.get()) {
-    combineWith(sourceSets.getByName("fabric"))
 }
 
 tasks.getByName<ProcessResources>("processFabricResources") {

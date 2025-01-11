@@ -29,6 +29,7 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
 
         for (Map.Entry<ResourceLocation, JsonElement> entry : object.entrySet()) {
             var id = entry.getKey();
+            System.out.println(entry.getValue());
 
             try {
                 RecipeModifierHolder recipeModifier = null; // TODO
