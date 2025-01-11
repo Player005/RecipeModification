@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public record ModificationSet(RecipeModifier[] modifiers) implements Iterable<RecipeModifier> {
+public record ModificationSet(RecipeModifier... modifiers) implements Iterable<RecipeModifier> {
 
     public void apply(Recipe<?> recipe, ModificationHelper helper) {
         for (var modifier : this) {

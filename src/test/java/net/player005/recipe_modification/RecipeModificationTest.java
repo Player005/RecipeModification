@@ -19,7 +19,11 @@ public class RecipeModificationTest {
 
     @Test
     void simpleModificationTest() {
-        RecipeModification.registerModifier(new RecipeModifierHolder(ResourceLocation.fromNamespaceAndPath("recipe_modification", "test"), RecipeFilter.ALWAYS_APPLY, new ModificationSet(new RecipeModifier[]{RecipeModifier.addAlternative(Items.ACACIA_BOAT, Items.ACACIA_BUTTON)})));
+        RecipeModification.registerModifier(
+                ResourceLocation.fromNamespaceAndPath("recipe_modification", "test"),
+                RecipeFilter.ALWAYS_APPLY,
+                RecipeModifier.addAlternative(Items.ACACIA_BOAT, Items.ACACIA_BUTTON)
+        );
     }
 
     @Test

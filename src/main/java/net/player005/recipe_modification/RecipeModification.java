@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 /**
  * The main class for recipe modifications, containing some utility methods.
  *
- * @see #registerModifier(RecipeModifier)
+ * @see #registerModifier(RecipeModifierHolder)
  * @see #removeRecipe(RecipeHolder)
  * @see #forAllRecipes(Consumer)
  */
@@ -47,7 +47,7 @@ public abstract class RecipeModification {
 
     /**
      * This method can be used to have some code be executed when the server is starting, right before
-     * we apply recipe modifiers. It is also an easy way to access the {@link RecipeManager}.
+     * we apply recipe recipeModifiers. It is also an easy way to access the {@link RecipeManager}.
      * <p>
      * The given consumer will be executed on every datapack reload on dedicated servers,
      * or everytime a singleplayer world is loaded on the Client.
@@ -98,6 +98,24 @@ public abstract class RecipeModification {
      */
     public static void registerModifier(RecipeModifierHolder recipeModifier) {
         modifiers.add(recipeModifier);
+    }
+
+    /**
+     * Registers the given recipe modifications to be applied on all recipes matching the given filter.
+     *
+     * @see #registerModifier(RecipeModifierHolder)
+     */
+    public static void registerModifier(ResourceLocation id, RecipeFilter filter, ModificationSet modifications) {
+        registerModifier(new RecipeModifierHolder(id, filter, modifications));
+    }
+
+    /**
+     * Registers the given recipe modifications to be applied on all recipes matching the given filter.
+     *
+     * @see #registerModifier(RecipeModifierHolder)
+     */
+    public static void registerModifier(ResourceLocation id, RecipeFilter filter, RecipeModifier... modifications) {
+        registerModifier(new RecipeModifierHolder(id, filter, modifications));
     }
 
     /**
@@ -218,7 +236,7 @@ public abstract class RecipeModification {
                 if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
             }
 
-            // apply recipe modifiers
+            // apply recipe recipeModifiers
             for (RecipeModifierHolder modifier : getAllModifiers()) {
                 if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
                 var helper = new ModificationHelper(recipeHolder);
