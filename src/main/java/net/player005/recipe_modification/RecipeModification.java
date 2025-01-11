@@ -38,8 +38,8 @@ public abstract class RecipeModification {
     private static final Map<RecipeFilter, Consumer<RecipeHolder<?>>> filteredRecipeCallbacks = new HashMap<>();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
-    private static final NonNullList<RecipeModifier> modifiers = NonNullList.create();
-    private static NonNullList<RecipeModifier> recipeModifiersFromDatapack;
+    private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
+    private static @UnknownNullability NonNullList<RecipeModifierHolder> recipeModifiersFromDatapack;
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
 
@@ -94,9 +94,9 @@ public abstract class RecipeModification {
     }
 
     /**
-     * Registers a {@link RecipeModifier} to be applied when loading recipes.
+     * Registers a {@link RecipeModifierHolder} to be applied when loading recipes.
      */
-    public static void registerModifier(RecipeModifier recipeModifier) {
+    public static void registerModifier(RecipeModifierHolder recipeModifier) {
         modifiers.add(recipeModifier);
     }
 
@@ -155,15 +155,15 @@ public abstract class RecipeModification {
         return recipesByResult.get(resultItem);
     }
 
-    public static List<RecipeModifier> getAllModifiers() {
-        var fullList = new ArrayList<RecipeModifier>(modifiers.size() + recipeModifiersFromDatapack.size());
+    public static List<RecipeModifierHolder> getAllModifiers() {
+        var fullList = new ArrayList<RecipeModifierHolder>(modifiers.size() + recipeModifiersFromDatapack.size());
         fullList.addAll(modifiers);
         fullList.addAll(recipeModifiersFromDatapack);
         return fullList;
     }
 
     @ApiStatus.Internal
-    static void updateJsonRecipeModifiers(NonNullList<RecipeModifier> modifiers) {
+    static void updateJsonRecipeModifiers(NonNullList<RecipeModifierHolder> modifiers) {
         recipeModifiersFromDatapack = modifiers;
     }
 
@@ -180,7 +180,7 @@ public abstract class RecipeModification {
 
     /**
      * Internal method that should be called on every datapack reload.
-     * Initialises all registered {@link RecipeModifier}s, calls all {@link #onRecipeInit(Consumer)}
+     * Initialises all registered {@link RecipeModifierHolder}s, calls all {@link #onRecipeInit(Consumer)}
      * callbacks and removes recipes registered for removal using {@link #removeRecipe(RecipeHolder)}
      */
     @ApiStatus.Internal
@@ -219,8 +219,8 @@ public abstract class RecipeModification {
             }
 
             // apply recipe modifiers
-            for (RecipeModifier modifier : getAllModifiers()) {
-                if (!modifier.getFilter().shouldApply(recipeHolder, registryAccess)) continue;
+            for (RecipeModifierHolder modifier : getAllModifiers()) {
+                if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
                 var helper = new ModificationHelper(recipeHolder);
                 modifier.apply(recipeHolder.value(), helper);
                 modified++;

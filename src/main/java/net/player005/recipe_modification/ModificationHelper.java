@@ -17,8 +17,8 @@ import java.util.Map;
 /**
  * A helper class for modifying recipes easily.
  *
- * @see RecipeModification#registerModifier(RecipeModifier)
- * @see RecipeModifier
+ * @see RecipeModification#registerModifier(RecipeModifierHolder)
+ * @see RecipeModifierHolder
  */
 public class ModificationHelper {
 
@@ -62,6 +62,16 @@ public class ModificationHelper {
                 if (item.is(original)) addIngredientValue(ingredient, alternative);
             }
         }
+    }
+
+    /**
+     * Add an alternative to matching items.
+     *
+     * @param original    the item that can be substituted
+     * @param alternative the substitute
+     */
+    public void addAlternative(Ingredient original, Ingredient.Value alternative) {
+        addIngredientValue(original, alternative);
     }
 
     /**

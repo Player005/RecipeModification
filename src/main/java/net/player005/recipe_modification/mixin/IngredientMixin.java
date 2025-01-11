@@ -24,6 +24,8 @@ public abstract class IngredientMixin implements Predicate<ItemStack>, Ingredien
     @Override
     public void replaceValues(Ingredient.Value[] values) {
         this.values = values;
+        // wtf idea
+        //noinspection DataFlowIssue
         this.itemStacks = null;
         this.stackingIds = null;
     }

@@ -25,13 +25,13 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
 
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
-        var list = NonNullList.<RecipeModifier>create();
+        var list = NonNullList.<RecipeModifierHolder>create();
 
         for (Map.Entry<ResourceLocation, JsonElement> entry : object.entrySet()) {
             var id = entry.getKey();
 
             try {
-                RecipeModifier recipeModifier = null; // TODO
+                RecipeModifierHolder recipeModifier = null; // TODO
                 list.add(recipeModifier);
             } catch (IllegalArgumentException | JsonParseException exception) {
                 LOGGER.error("Parsing error loading recipe modifier {}", id, exception);

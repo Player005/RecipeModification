@@ -1,30 +1,70 @@
 package net.player005.recipe_modification;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
-import org.jetbrains.annotations.Nullable;
 
-/**
- * A recipe modifier.
- * To use this, implement and call {@link RecipeModification#registerModifier(RecipeModifier)}.
- */
+@FunctionalInterface
 public interface RecipeModifier {
+
+    void apply(Recipe<?> recipe, ModificationHelper helper);
+
     /**
-     * An optional identifier of this modifier.
+     * Removes all ingredients that match the given item.
      */
-    default @Nullable ResourceLocation id() {
-        return null;
+    static RecipeModifier removeAllIngredients(Item item) {
+        return removeIngredients(IngredientSelector.matchingItem(item));
     }
 
     /**
-     * The filter to manage which recipes should be modified by this modifier.
-     * Either implement your own filter or check the static members of the {@link RecipeFilter} class.
+     * Removes all ingredients that match the given selector.
      */
-    RecipeFilter getFilter();
+    static RecipeModifier removeIngredients(IngredientSelector selector) {
+        return (recipe, helper) -> {
+            for (var ingredient : selector.selectIngredients(recipe)) {
+                helper.removeIngredient(ingredient);
+            }
+        };
+    }
 
     /**
-     * The main method to implement, which modifies the given recipe by using the methods of the given
-     * {@link ModificationHelper}
+     * Removes the ingredient at the given ordinal.
      */
-    void apply(Recipe<?> recipe, ModificationHelper helper);
+    static RecipeModifier removeIngredient(int ordinal) {
+        return (recipe, helper) -> helper.removeIngredient(recipe.getIngredients().get(ordinal));
+    }
+
+    /**
+     * Add the given ingredient value as an alternative to matching ingredients.
+     */
+    static RecipeModifier addAlternative(IngredientSelector selector, Ingredient.Value alternative) {
+        return (recipe, helper) -> {
+            for (var ingredient : selector.selectIngredients(recipe)) {
+                helper.addAlternative(ingredient, alternative);
+            }
+        };
+    }
+
+    /**
+     * Add the given item as an alternative to matching ingredients.
+     */
+    static RecipeModifier addAlternative(Item original, Item alternative) {
+        return (recipe, helper) -> helper.addAlternative(original, alternative);
+    }
+
+    /**
+     * Add the given tag as an alternative to matching ingredients.
+     */
+    static RecipeModifier addAlternative(Item original, TagKey<Item> alternative) {
+        return (recipe, helper) -> helper.addAlternative(original, alternative);
+    }
+
+    /**
+     * Replaces the ingredient at the given ordinal with the given item.
+     */
+    static RecipeModifier replaceIngredient(int ordinal, Item item) {
+        return (recipe, helper) -> helper.replaceIngredient(recipe.getIngredients().get(ordinal), item);
+    }
+
 }

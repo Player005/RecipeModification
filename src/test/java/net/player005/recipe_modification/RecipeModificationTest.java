@@ -1,9 +1,9 @@
 package net.player005.recipe_modification;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Recipe;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,17 +19,7 @@ public class RecipeModificationTest {
 
     @Test
     void simpleModificationTest() {
-        RecipeModification.registerModifier(new RecipeModifier() {
-            @Override
-            public RecipeFilter getFilter() {
-                return RecipeFilter.acceptsIngredient(Items.LEATHER.getDefaultInstance());
-            }
-
-            @Override
-            public void apply(Recipe<?> recipe, ModificationHelper helper) {
-                helper.addAlternative(Items.LEATHER, Items.ACACIA_BUTTON);
-            }
-        });
+        RecipeModification.registerModifier(new RecipeModifierHolder(ResourceLocation.fromNamespaceAndPath("recipe_modification", "test"), RecipeFilter.ALWAYS_APPLY, new ModificationSet(new RecipeModifier[]{RecipeModifier.addAlternative(Items.ACACIA_BOAT, Items.ACACIA_BUTTON)})));
     }
 
     @Test
