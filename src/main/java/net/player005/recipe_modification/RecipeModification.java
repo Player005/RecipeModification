@@ -1,16 +1,22 @@
 package net.player005.recipe_modification;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.player005.recipe_modification.mixin.RecipeManagerAccessor;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,11 +28,13 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * The main class for recipe modifications, containing some utility methods.
+ * The central class for recipe modifications, containing some utility methods.
  *
  * @see #registerModifier(RecipeModifierHolder)
+ * @see #registerModifier(ResourceLocation, RecipeFilter, RecipeModifier...)
  * @see #removeRecipe(RecipeHolder)
  * @see #forAllRecipes(Consumer)
+ * @see #onRecipeInit(Consumer)
  */
 public abstract class RecipeModification {
 
@@ -40,6 +48,7 @@ public abstract class RecipeModification {
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
     private static @UnknownNullability NonNullList<RecipeModifierHolder> recipeModifiersFromDatapack;
+    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers = ArrayListMultimap.create();
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
 
@@ -64,6 +73,13 @@ public abstract class RecipeModification {
      */
     public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer) {
         recipeIterationCallbacks.add(recipeConsumer);
+    }
+
+    /**
+     * Registers a {@link ResultItemModifier} to be applied to the result item of the given recipe
+     */
+    public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
+        resultModifiers.put(recipe, modifier);
     }
 
     /**
@@ -192,8 +208,12 @@ public abstract class RecipeModification {
     }
 
     @ApiStatus.Internal
-    static void init() {
-
+    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable RecipeInput recipeInput) {
+        for (var entry : resultModifiers.entries()) {
+            if (entry.getKey() != recipe) continue;
+            currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
+        }
+        return currentResult;
     }
 
     /**

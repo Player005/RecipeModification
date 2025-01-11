@@ -1,18 +1,11 @@
 package net.player005.recipe_modification;
 
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.player005.recipe_modification.mixin.IngredientExtension;
+import net.player005.recipe_modification.mixin.IngredientAccessor;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A helper class for modifying recipes easily.
@@ -21,9 +14,6 @@ import java.util.Map;
  * @see RecipeModifierHolder
  */
 public class ModificationHelper {
-
-    @ApiStatus.Internal
-    public static final Map<Recipe<?>, ItemStack> MODIFIED_RESULT_ITEMS = new HashMap<>();
 
     private final RecipeHolder<?> recipeHolder;
 
@@ -56,20 +46,6 @@ public class ModificationHelper {
      * @param original    the item that can be substituted
      * @param alternative the substitute
      */
-    public void addAlternative(Item original, Ingredient.Value alternative) {
-        for (Ingredient ingredient : recipeHolder.value().getIngredients()) {
-            for (ItemStack item : ingredient.getItems()) {
-                if (item.is(original)) addIngredientValue(ingredient, alternative);
-            }
-        }
-    }
-
-    /**
-     * Add an alternative to matching items.
-     *
-     * @param original    the item that can be substituted
-     * @param alternative the substitute
-     */
     public void addAlternative(Ingredient original, Ingredient.Value alternative) {
         addIngredientValue(original, alternative);
     }
@@ -77,43 +53,35 @@ public class ModificationHelper {
     /**
      * Add an alternative to matching items.
      *
-     * @param original    the item that can be substituted
+     * @param selector    {@link IngredientSelector} for the item that can be substituted
      * @param alternative the substitute
      */
-    public void addAlternative(Item original, Item alternative) {
-        addAlternative(original, new Ingredient.ItemValue(alternative.getDefaultInstance()));
-    }
-
-    /**
-     * Add an alternative to matching items.
-     *
-     * @param original    the item that can be substituted
-     * @param alternative the substitute
-     */
-    public void addAlternative(Item original, TagKey<Item> alternative) {
-        addAlternative(original, new Ingredient.TagValue(alternative));
+    public void addAlternative(IngredientSelector selector, Ingredient.Value alternative) {
+        for (var ingredient : selector.selectIngredients(recipeHolder.value())) {
+            addAlternative(ingredient, alternative);
+        }
     }
 
     /**
      * Completely replaces the {@link Ingredient#values} of the ingredient with the given one
      * (effectively replacing the entire ingredient)
+     *
+     * @see #replaceIngredientValues(IngredientSelector, Ingredient.Value[])
      */
     public void replaceIngredientValues(Ingredient ingredient, Ingredient.Value[] ingredientValues) {
-        ((IngredientExtension) (Object) ingredient).replaceValues(ingredientValues);
+        ((IngredientAccessor) (Object) ingredient).replaceValues(ingredientValues);
     }
 
     /**
-     * Replaces the given ingredient with a new {@link Item} ingredient.
+     * Completely replaces the {@link Ingredient#values} of all ingredients selected by the given selector with the given one
+     * (effectively replacing the entire ingredients)
+     *
+     * @see #replaceIngredientValues(Ingredient, Ingredient.Value[])
      */
-    public void replaceIngredient(Ingredient ingredient, Item item) {
-        replaceIngredientValues(ingredient, new Ingredient.ItemValue[]{new Ingredient.ItemValue(item.getDefaultInstance())});
-    }
-
-    /**
-     * Replaces the given ingredient with a new item tag ingredient.
-     */
-    public void replaceIngredient(Ingredient ingredient, TagKey<Item> tag) {
-        replaceIngredientValues(ingredient, new Ingredient.TagValue[]{new Ingredient.TagValue(tag)});
+    public void replaceIngredientValues(IngredientSelector ingredientSelector, Ingredient.Value[] newValues) {
+        for (var ingredient : ingredientSelector.selectIngredients(recipeHolder.value())) {
+            ((IngredientAccessor) (Object) ingredient).replaceValues(newValues);
+        }
     }
 
     /**
@@ -122,7 +90,7 @@ public class ModificationHelper {
      * to copy the data from the new ingredient to the existing one.
      */
     public void replaceIngredient(Ingredient old, Ingredient newIngredient) {
-        replaceIngredientValues(old, ((IngredientExtension) (Object) newIngredient).getValues());
+        replaceIngredientValues(old, ((IngredientAccessor) (Object) newIngredient).getValues());
     }
 
     /**
@@ -130,15 +98,15 @@ public class ModificationHelper {
      * If the given value is the only one in the Ingredient, the recipe might become impossible to make.
      */
     public void removeIngredientValue(Ingredient ingredient, Ingredient.Value toRemove) {
-        ((IngredientExtension) (Object) ingredient).removeValue(toRemove);
+        ((IngredientAccessor) (Object) ingredient).removeValue(toRemove);
     }
 
     /**
-     * Adds a {@link Ingredient.Value} to the given ingredient, providing an
+     * Adds an {@link Ingredient.Value} to the given ingredient, providing an
      * alternative item to use for the ingredient/recipe.
      */
     public void addIngredientValue(Ingredient ingredient, Ingredient.Value addedValue) {
-        var values = ((IngredientExtension) (Object) ingredient).getValues();
+        var values = ((IngredientAccessor) (Object) ingredient).getValues();
         if (ArrayUtils.contains(values, addedValue)) return;
 
         var newValues = Arrays.copyOf(values, values.length + 1);

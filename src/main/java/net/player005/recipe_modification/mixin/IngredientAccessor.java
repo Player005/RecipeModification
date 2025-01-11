@@ -2,7 +2,7 @@ package net.player005.recipe_modification.mixin;
 
 import net.minecraft.world.item.crafting.Ingredient;
 
-public interface IngredientExtension {
+public interface IngredientAccessor {
     default void replaceValues(Ingredient.Value[] values) {
         throw new RuntimeException();
     }

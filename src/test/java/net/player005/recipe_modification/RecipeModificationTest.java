@@ -4,7 +4,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Items;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,10 +29,5 @@ public class RecipeModificationTest {
     void ThrowOnEarlyAccess() {
         Assertions.assertThrowsExactly(IllegalStateException.class, RecipeModification::getRegistryAccess);
         Assertions.assertThrowsExactly(IllegalStateException.class, RecipeModification::getRecipesByResult);
-    }
-
-    @AfterAll
-    static void afterAll() {
-
     }
 }
