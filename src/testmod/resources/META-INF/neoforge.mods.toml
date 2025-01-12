@@ -1,0 +1,7 @@
+modLoader = "javafml"
+loaderVersion = "*"
+
+license = "LGPL"
+
+[[mods]]
+modId = "recipe_modification_testmod"

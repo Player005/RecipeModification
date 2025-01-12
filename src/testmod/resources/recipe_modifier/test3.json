@@ -1,0 +1,17 @@
+{
+  "target_recipes": {
+    "type": "accepting_ingredient",
+    "item": {
+      "id": "minecraft:diamond"
+    }
+  },
+  "modifiers": [
+    {
+      "type": "replace_ingredient",
+      "ingredient": "oak_planks",
+      "new_ingredient": {
+        "item": "minecraft:netherite_ingot"
+      }
+    }
+  ]
+}
