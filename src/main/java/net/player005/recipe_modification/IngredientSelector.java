@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import org.apache.commons.lang3.ArrayUtils;
@@ -50,11 +51,11 @@ public interface IngredientSelector {
      *
      * @see #matchingItem(Item)
      */
-    static IngredientSelector byItem(Item items) {
+    static IngredientSelector byItem(Item item) {
         return recipe -> {
             var toReturn = new ArrayList<Ingredient>();
             for (var ingredient : recipe.getIngredients()) {
-                if (ArrayUtils.contains(ingredient.getItems(), items)) toReturn.add(ingredient);
+                if (ArrayUtils.contains(ingredient.getItems(), item)) toReturn.add(ingredient);
             }
             return toReturn.toArray(Ingredient[]::new);
         };
@@ -140,6 +141,7 @@ public interface IngredientSelector {
             if (isStrict) string = string.substring(0, string.length() - 1);
 
             var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(string));
+            if (item == Items.AIR) throw new RecipeModifierParsingException("Invalid item: " + string);
             return isStrict ? matchingItem(item) : byItem(item);
         }
 

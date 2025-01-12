@@ -126,7 +126,7 @@ public interface RecipeModifier {
             });
 
             registerDeserializer("replace_ingredient", object -> {
-                var ingredientSelector = IngredientSelector.Serialization.fromJson(object.get("ingredients"));
+                var ingredientSelector = IngredientSelector.Serialization.fromJson(object.get("ingredient"));
                 var newIngredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("new_ingredient")).getOrThrow();
                 return replaceIngredient(ingredientSelector, newIngredient);
             });
