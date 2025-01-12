@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(RecipeManager.class)
 public class RecipeManagerMixin {
-    @Inject(method = {"<init>", "replaceRecipes"}, at = @At("RETURN"))
+    @Inject(method = "apply(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceManager;Lnet/minecraft/util/profiling/ProfilerFiller;)V", at = @At("RETURN"))
     void onRecipeManagerLoad(CallbackInfo ci) {
         RecipeModification.onRecipeManagerLoad((RecipeManager) (Object) this);
     }

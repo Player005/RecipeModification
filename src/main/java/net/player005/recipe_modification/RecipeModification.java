@@ -54,6 +54,9 @@ public abstract class RecipeModification {
 
     private static @UnknownNullability RecipeManager recipeManager;
 
+    private static boolean hasUpdatedRecipeManager = false;
+    private static boolean hasUpdatedModifiers = false;
+
     /**
      * This method can be used to have some code be executed when the server is starting, right before
      * we apply recipe recipeModifiers. It is also an easy way to access the {@link RecipeManager}.
@@ -196,11 +199,6 @@ public abstract class RecipeModification {
         return fullList;
     }
 
-    @ApiStatus.Internal
-    static void updateJsonRecipeModifiers(NonNullList<RecipeModifierHolder> modifiers) {
-        recipeModifiersFromDatapack = modifiers;
-    }
-
     private static void checkInitialised(String action) {
         if (recipeManager == null)
             throw new IllegalStateException("Can't " + action + " before recipes are initialised." +
@@ -216,14 +214,35 @@ public abstract class RecipeModification {
         return currentResult;
     }
 
+    @ApiStatus.Internal
+    public static void onRecipeManagerLoad(RecipeManager recipeManager) {
+        RecipeModification.recipeManager = recipeManager;
+        hasUpdatedRecipeManager = true;
+        checkForUpdate();
+    }
+
+    @ApiStatus.Internal
+    static void updateJsonRecipeModifiers(NonNullList<RecipeModifierHolder> modifiers) {
+        recipeModifiersFromDatapack = modifiers;
+        hasUpdatedModifiers = true;
+        checkForUpdate();
+    }
+
+    private static void checkForUpdate() {
+        if (hasUpdatedRecipeManager && hasUpdatedModifiers) {
+            applyModifications();
+            hasUpdatedRecipeManager = false;
+            hasUpdatedModifiers = false;
+        }
+    }
+
     /**
      * Internal method that should be called on every datapack reload.
      * Initialises all registered {@link RecipeModifierHolder}s, calls all {@link #onRecipeInit(Consumer)}
      * callbacks and removes recipes registered for removal using {@link #removeRecipe(RecipeHolder)}
      */
     @ApiStatus.Internal
-    public static void onRecipeManagerLoad(RecipeManager recipeManager) {
-        RecipeModification.recipeManager = recipeManager;
+    private static void applyModifications() {
         var timer = Stopwatch.createStarted();
 
         var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
@@ -243,6 +262,8 @@ public abstract class RecipeModification {
 
         timer.reset().start();
         var modified = 0;
+
+        logger.info("Found {} recipe modifiers in datapacks, {} total", recipeModifiersFromDatapack.size(), getAllModifiers().size());
 
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
@@ -274,5 +295,4 @@ public abstract class RecipeModification {
         }
         logger.info("Modified {} recipes in {}", modified, timer);
     }
-
 }

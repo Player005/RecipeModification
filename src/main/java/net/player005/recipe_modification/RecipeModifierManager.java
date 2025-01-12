@@ -28,24 +28,19 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
             var id = entry.getKey();
 
             try {
-                list.add(deserializeModifier(id, entry.getValue().getAsJsonObject()));
+                JsonObject json = entry.getValue().getAsJsonObject();
+                list.add(new RecipeModifierHolder(
+                        id,
+                        RecipeFilter.Serialization.fromJson(json.get("target_recipes")),
+                        ModificationSet.Serialization.fromJson(json.get("modifiers"))
+                ));
             } catch (Exception exception) {
                 LOGGER.error("Error loading recipe modifier {}:", id, exception);
             }
         }
 
         RecipeModification.updateJsonRecipeModifiers(list);
-    }
 
-    private RecipeModifierHolder deserializeModifier(ResourceLocation id, JsonObject json) {
-        return new RecipeModifierHolder(id, deserializeRecipeFilter(json.get("target_recipes")), deserializeModifiers(json.get("modifiers")));
-    }
-
-    private ModificationSet deserializeModifiers(JsonElement modifiers) {
-        return ModificationSet.Serialization.fromJson(modifiers);
-    }
-
-    private RecipeFilter deserializeRecipeFilter(JsonElement targetRecipes) {
-        return RecipeFilter.Serialization.fromJson(targetRecipes);
+        LOGGER.info("Loaded {} recipe modifiers", list.size());
     }
 }

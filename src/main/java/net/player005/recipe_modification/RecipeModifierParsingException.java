@@ -1,6 +1,8 @@
 package net.player005.recipe_modification;
 
-public class RecipeModifierParsingException extends RuntimeException {
+import com.google.gson.JsonParseException;
+
+public class RecipeModifierParsingException extends JsonParseException {
     public RecipeModifierParsingException(String message) {
         super(message);
     }
