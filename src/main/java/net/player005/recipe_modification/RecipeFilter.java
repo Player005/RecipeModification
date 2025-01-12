@@ -130,8 +130,8 @@ public interface RecipeFilter {
         }
 
         static {
-            registerSerializer("always_apply", (json) -> ALWAYS_APPLY);
-            registerSerializer("accepts_ingredient", (json) -> {
+            registerSerializer("all_recipes", (json) -> ALWAYS_APPLY);
+            registerSerializer("accepting_ingredient", (json) -> {
                 var item = ItemStack.CODEC.parse(JsonOps.INSTANCE, json.get("item")).getOrThrow();
                 return acceptsIngredient(item);
             });
