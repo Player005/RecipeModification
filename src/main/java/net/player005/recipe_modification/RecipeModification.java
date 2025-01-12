@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
@@ -230,9 +231,11 @@ public abstract class RecipeModification {
 
     private static void checkForUpdate() {
         if (hasUpdatedRecipeManager && hasUpdatedModifiers) {
-            applyModifications();
-            hasUpdatedRecipeManager = false;
-            hasUpdatedModifiers = false;
+            CompletableFuture.runAsync(RecipeModification::applyModifications)
+                    .whenComplete((result, throwable) -> {
+                        hasUpdatedRecipeManager = false;
+                        hasUpdatedModifiers = false;
+                    });
         }
     }
 
@@ -277,13 +280,18 @@ public abstract class RecipeModification {
                 if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
             }
 
-            // apply recipe recipeModifiers
+            // apply recipeModifiers
+            var appliedOnRecipe = 0;
             for (RecipeModifierHolder modifier : getAllModifiers()) {
                 if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
                 var helper = new ModificationHelper(recipeHolder);
                 modifier.apply(recipeHolder.value(), helper);
-                modified++;
+                appliedOnRecipe++;
             }
+
+            if (appliedOnRecipe > 0)
+                logger.debug("Applied {} recipe modifiers on {}", appliedOnRecipe, recipeHolder.id());
+
 
             for (ResourceLocation id : toRemove) {
                 if (recipeHolder.id().equals(id)) {
@@ -292,6 +300,7 @@ public abstract class RecipeModification {
                     recipeManager.getOrderedRecipes().remove(recipeHolder); // remove from RecipeManager#byType
                 }
             }
+            modified += appliedOnRecipe;
         }
         logger.info("Modified {} recipes in {}", modified, timer);
     }
