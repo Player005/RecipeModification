@@ -17,7 +17,7 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public RecipeModifierManager() {
-        super(GSON, "recipe_modifiers");
+        super(GSON, "recipe_modifier");
     }
 
     @Override
