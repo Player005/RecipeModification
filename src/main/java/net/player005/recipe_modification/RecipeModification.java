@@ -239,7 +239,7 @@ public abstract class RecipeModification {
             i++;
         }
 
-        if (i > 0) logger.debug("Applied {} result item modifiers", i);
+        if (recipeInput != null && i > 0) logger.debug("Applied {} result item modifiers", i);
         return currentResult;
     }
 

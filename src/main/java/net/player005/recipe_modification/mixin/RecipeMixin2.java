@@ -26,7 +26,7 @@ public class RecipeMixin2 {
     @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "assemble", args =
             {RecipeInput.class, net.minecraft.core.HolderLookup.Provider.class}, ret = ItemStack.class))
     public void modifyAssemble(CallbackInfoReturnable<ItemStack> cir, @Local(argsOnly = true) RecipeInput recipeInput) {
-        cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput));
+        cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput).copy());
     }
 
 }
