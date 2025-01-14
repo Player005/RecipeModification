@@ -13,7 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -54,9 +53,9 @@ public interface IngredientSelector {
     static IngredientSelector byItem(Item item) {
         return recipe -> {
             var toReturn = new ArrayList<Ingredient>();
-            for (var ingredient : recipe.getIngredients()) {
-                if (ArrayUtils.contains(ingredient.getItems(), item)) toReturn.add(ingredient);
-            }
+            for (var ingredient : recipe.getIngredients())
+                for (ItemStack ingredientItem : ingredient.getItems())
+                    if (ingredientItem.is(item)) toReturn.add(ingredient);
             return toReturn.toArray(Ingredient[]::new);
         };
     }

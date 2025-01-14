@@ -4,8 +4,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Arrays;
-
 /**
  * A helper class for modifying recipes easily.
  *
@@ -108,8 +106,7 @@ public class ModificationHelper {
         var values = ((IngredientAccessor) (Object) ingredient).getValues();
         if (ArrayUtils.contains(values, addedValue)) return;
 
-        var newValues = Arrays.copyOf(values, values.length + 1);
-        newValues[newValues.length - 1] = addedValue;
+        var newValues = ArrayUtils.add(values, addedValue);
         replaceIngredientValues(ingredient, newValues);
     }
 
