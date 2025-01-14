@@ -22,10 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -43,8 +42,7 @@ public abstract class RecipeModification {
     static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
-    private static final NonNullList<Consumer<RecipeHolder<?>>> recipeIterationCallbacks = NonNullList.create();
-    private static final Map<RecipeFilter, Consumer<RecipeHolder<?>>> filteredRecipeCallbacks = new HashMap<>();
+    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
@@ -71,12 +69,28 @@ public abstract class RecipeModification {
     }
 
     /**
-     * The given lambda will be called once for EVERY loaded recipe.
-     * Using this method is cheaper than looping through all recipes yourself since
-     * this library already iterates all recipes anyway.
+     * The given lambda will be called once for every loaded recipe matching the given filter,
+     * every time datapacks are reloaded.
+     * Using this method is usually cheaper than looping through all recipes yourself since
+     * this library already iterates through all recipes anyway.
+     *
+     * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
+     */
+    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer, RecipeFilter filter) {
+        if (isInitialised())
+            CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
+        else recipeIterationCallbacks.put(filter, recipeConsumer);
+    }
+
+    /**
+     * The given lambda will be called once for every loaded recipe, every time datapacks are reloaded.
+     * Using this method is usually cheaper than looping through all recipes yourself since
+     * this library already iterates through all recipes anyway, and it is also asynchronous.
+     *
+     * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
     public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer) {
-        recipeIterationCallbacks.add(recipeConsumer);
+        forAllRecipes(recipeConsumer, RecipeFilter.ALWAYS_APPLY);
     }
 
     /**
@@ -84,15 +98,21 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe), resultModifiers.size());
     }
 
     /**
-     * The given lambda will be called once for every loaded recipe matching the given filter.
-     * Using this method is cheaper than looping through all recipes yourself since
-     * this library already iterates all recipes anyway.
+     * Finds the ResourceLocation of the given recipe. Try to avoid this method if possible,
+     * as it will iterate through all recipes every time it is called.
      */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer, RecipeFilter filter) {
-        filteredRecipeCallbacks.put(filter, recipeConsumer);
+    public static ResourceLocation findRecipeID(Recipe<?> recipe) {
+        AtomicReference<ResourceLocation> found = new AtomicReference<>();
+        forAllRecipes(recipeHolder -> {
+            if (recipeHolder.value().equals(recipe)) {
+                found.set(recipeHolder.id());
+            }
+        });
+        return found.get();
     }
 
     /**
@@ -200,18 +220,26 @@ public abstract class RecipeModification {
         return fullList;
     }
 
+    public static boolean isInitialised() {
+        return recipeManager != null;
+    }
+
     private static void checkInitialised(String action) {
-        if (recipeManager == null)
+        if (!isInitialised())
             throw new IllegalStateException("Can't " + action + " before recipes are initialised." +
-                    "Maybe you need to use RecipeManager#onRecipeInit() ?");
+                    "Maybe you need to use RecipeModification#onRecipeInit() ?");
     }
 
     @ApiStatus.Internal
     public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable RecipeInput recipeInput) {
+        var i = 0;
         for (var entry : resultModifiers.entries()) {
             if (entry.getKey() != recipe) continue;
             currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
+            i++;
         }
+
+        if (i > 0) logger.debug("Applied {} result item modifiers", i);
         return currentResult;
     }
 
@@ -271,12 +299,7 @@ public abstract class RecipeModification {
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
 
-            // call registered callbacks
-            for (Consumer<RecipeHolder<?>> recipeIterationCallback : recipeIterationCallbacks) {
-                recipeIterationCallback.accept(recipeHolder);
-            }
-
-            for (final var entry : filteredRecipeCallbacks.entrySet()) {
+            for (final var entry : recipeIterationCallbacks.entries()) {
                 if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
             }
 
@@ -290,7 +313,7 @@ public abstract class RecipeModification {
             }
 
             if (appliedOnRecipe > 0)
-                logger.debug("Applied {} recipe modifiers on {}", appliedOnRecipe, recipeHolder.id());
+                logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
 
 
             for (ResourceLocation id : toRemove) {

@@ -8,8 +8,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A functional interface to modify the result item of a recipe.
  *
- * @see #getResultItem(Recipe, ItemStack, RecipeInput)
  * @see RecipeModification#registerRecipeResultModifier(Recipe, ResultItemModifier)
+ * @see #getResultItem(Recipe, ItemStack, RecipeInput)
  */
 @FunctionalInterface
 public interface ResultItemModifier {
