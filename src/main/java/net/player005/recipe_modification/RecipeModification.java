@@ -66,10 +66,10 @@ public abstract class RecipeModification {
     }
 
     /**
-     * The given lambda will be called once for every loaded recipe matching the given filter,
+     * The given lambda will be called once for EVERY loaded recipe matching the given filter,
      * every time datapacks are reloaded.
-     * Using this method is usually cheaper than looping through all recipes yourself since
-     * this library already iterates through all recipes anyway.
+     * If this is called before recipe initialization, it will be executed when recipes are loaded.
+     * Otherwise, it will be executed immediately (but off-thread).
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
@@ -80,9 +80,9 @@ public abstract class RecipeModification {
     }
 
     /**
-     * The given lambda will be called once for every loaded recipe, every time datapacks are reloaded.
-     * Using this method is usually cheaper than looping through all recipes yourself since
-     * this library already iterates through all recipes anyway, and it is also asynchronous.
+     * The given lambda will be called once for EVERY loaded recipe, every time datapacks are reloaded.
+     * If this is called before recipe initialistion, it will be executed when recipes are loaded.
+     * Otherwise, it will be executed immediately (but off-thread).
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
@@ -312,5 +312,6 @@ public abstract class RecipeModification {
             modified += appliedOnRecipe;
         }
         logger.info("Modified {} recipes in {}", modified, timer);
+        recipeIterationCallbacks.clear();
     }
 }
