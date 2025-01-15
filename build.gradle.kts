@@ -12,8 +12,11 @@ repositories {
 }
 
 sourceSets {
-    create("neoforge")
+    create("api")
+    create("1.21.4")
+    create("1.20.1")
     create("fabric")
+    create("neoforge")
     create("testmod")
 }
 
@@ -29,25 +32,48 @@ group = properties["group"].toString()
 version = properties["version"].toString()
 base.archivesName = properties["modid"].toString()
 
-unimined.minecraft {
+unimined.minecraft(sourceSets.getByName("api")) {
     val minecraftVersion: String by properties
     val parchmentVersion: String by properties
 
-    version(minecraftVersion)
+    if (!this.sourceSet.name.startsWith("1.2")) {
+        version(minecraftVersion)
+        mappings {
+            intermediary()
+            mojmap()
+            parchment(version = parchmentVersion)
+
+            devFallbackNamespace("official")
+        }
+    }
     side("combined")
+}
+
+unimined.minecraft {
+    combineWith(sourceSets.getByName("api"))
 
     accessWidener {
         accessWidener("src/main/resources/recipe_modification.accesswidener")
     }
+}
+
+unimined.minecraft(sourceSets.getByName("1.21.4")) {
+    combineWith(sourceSets.main.get())
+    version("1.21.4")
 
     mappings {
-        intermediary()
         mojmap()
-        parchment(version = parchmentVersion)
-
         devFallbackNamespace("official")
     }
+}
 
+unimined.minecraft(sourceSets.getByName("1.20.1")) {
+    combineWith(sourceSets.main.get())
+    version("1.20.1")
+    mappings {
+        mojmap()
+        devFallbackNamespace("official")
+    }
 }
 
 unimined.minecraft(sourceSets.getByName("fabric")) {
@@ -107,8 +133,10 @@ tasks.getByName<ProcessResources>("processNeoforgeResources") {
 
 val testmodModImplementation by configurations.getting
 val testmodCompileOnly by configurations.getting
+val apiImplementation by configurations.getting
 
 dependencies {
+    apiImplementation("org.jetbrains:annotations:26.0.1")
     implementation("org.jetbrains:annotations:26.0.1")
 
     compileOnly("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")

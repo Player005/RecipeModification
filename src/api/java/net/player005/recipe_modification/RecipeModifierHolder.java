@@ -9,7 +9,7 @@ public record RecipeModifierHolder(ResourceLocation id, RecipeFilter filter, Mod
         this(id, filter, new ModificationSet(recipeModifiers));
     }
 
-    public void apply(Recipe<?> recipe, ModificationHelper helper) {
+    public void apply(Recipe<?> recipe, RecipeHelper helper) {
         modifications.apply(recipe, helper);
     }
 }

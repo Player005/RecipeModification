@@ -1,10 +1,7 @@
 package net.player005.recipe_modification;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +11,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.player005.recipe_modification.mixin.RecipeManagerAccessor;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -40,13 +36,15 @@ public abstract class RecipeModification {
 
     static final String modID = "recipe_modification";
     static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    private static Platform platform;
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
     private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
-    private static @UnknownNullability NonNullList<RecipeModifierHolder> recipeModifiersFromDatapack;
+    private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
     public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers = ArrayListMultimap.create();
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
@@ -162,7 +160,19 @@ public abstract class RecipeModification {
      */
     public static RecipeHolder<?> getByID(ResourceLocation id) {
         checkInitialised("get recipe by ID");
-        return ((RecipeManagerAccessor) recipeManager).getByName().get(id);
+        return getPlatform().getRecipesByName(recipeManager).get(id);
+    }
+
+    static void initPlatform(Platform platform) {
+        RecipeModification.platform = platform;
+    }
+
+    /**
+     * Returns the current {@link Platform}, an interface for some things that
+     * need to be handled differently on different minecraft versions.
+     */
+    public static Platform getPlatform() {
+        return platform;
     }
 
     /**
@@ -181,7 +191,7 @@ public abstract class RecipeModification {
      */
     public static HolderLookup.Provider getRegistryAccess() {
         checkInitialised("get the RecipeManager's registry access");
-        return ((RecipeManagerAccessor) recipeManager).getRegistries();
+        return getPlatform().getRegistryAccess(getRecipeManager());
     }
 
     /**
@@ -211,9 +221,9 @@ public abstract class RecipeModification {
     }
 
     public static List<RecipeModifierHolder> getAllModifiers() {
-        var fullList = new ArrayList<RecipeModifierHolder>(modifiers.size() + recipeModifiersFromDatapack.size());
+        var fullList = new ArrayList<RecipeModifierHolder>(modifiers.size() + modifiersFromDatapack.size());
         fullList.addAll(modifiers);
-        fullList.addAll(recipeModifiersFromDatapack);
+        fullList.addAll(modifiersFromDatapack);
         return fullList;
     }
 
@@ -243,14 +253,14 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static void onRecipeManagerLoad(RecipeManager recipeManager) {
         RecipeModification.recipeManager = recipeManager;
-        if (recipeModifiersFromDatapack == null)
+        if (modifiersFromDatapack == null)
             throw new IllegalStateException("Recipes were loaded before recipe modifiers from datapacks");
         applyModifications();
     }
 
     @ApiStatus.Internal
-    static void updateJsonRecipeModifiers(NonNullList<RecipeModifierHolder> modifiers) {
-        recipeModifiersFromDatapack = modifiers;
+    public static void updateJsonRecipeModifiers(ImmutableList<RecipeModifierHolder> modifiers) {
+        modifiersFromDatapack = modifiers;
     }
 
     /**
@@ -280,7 +290,8 @@ public abstract class RecipeModification {
         timer.reset().start();
         var modified = 0;
 
-        logger.info("Found {} recipe modifiers in datapacks, {} total", recipeModifiersFromDatapack.size(), getAllModifiers().size());
+        logger.info("Found {} recipe modifiers in datapacks, {} total",
+                modifiersFromDatapack.size(), getAllModifiers().size());
 
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
@@ -293,7 +304,7 @@ public abstract class RecipeModification {
             var appliedOnRecipe = 0;
             for (RecipeModifierHolder modifier : getAllModifiers()) {
                 if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
-                var helper = new ModificationHelper(recipeHolder);
+                RecipeHelper helper = getPlatform().getHelper();
                 modifier.apply(recipeHolder.value(), helper);
                 appliedOnRecipe++;
             }

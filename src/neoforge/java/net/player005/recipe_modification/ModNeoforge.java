@@ -9,5 +9,6 @@ public class ModNeoforge {
     public static final String modID = "recipe_modification";
 
     public ModNeoforge(IEventBus modEventBus) {
+        RecipeModification.initPlatform(new Platform_1_21());
     }
 }
