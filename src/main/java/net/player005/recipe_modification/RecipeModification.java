@@ -53,9 +53,6 @@ public abstract class RecipeModification {
 
     private static @UnknownNullability RecipeManager recipeManager;
 
-    private static boolean hasUpdatedRecipeManager = false;
-    private static boolean hasUpdatedModifiers = false;
-
     /**
      * This method can be used to have some code be executed when the server is starting, right before
      * we apply recipe recipeModifiers. It is also an easy way to access the {@link RecipeManager}.
@@ -246,25 +243,14 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static void onRecipeManagerLoad(RecipeManager recipeManager) {
         RecipeModification.recipeManager = recipeManager;
-        hasUpdatedRecipeManager = true;
-        checkForUpdate();
+        if (recipeModifiersFromDatapack == null)
+            throw new IllegalStateException("Recipes were loaded before recipe modifiers from datapacks");
+        applyModifications();
     }
 
     @ApiStatus.Internal
     static void updateJsonRecipeModifiers(NonNullList<RecipeModifierHolder> modifiers) {
         recipeModifiersFromDatapack = modifiers;
-        hasUpdatedModifiers = true;
-        checkForUpdate();
-    }
-
-    private static void checkForUpdate() {
-        if (hasUpdatedRecipeManager && hasUpdatedModifiers) {
-            CompletableFuture.runAsync(RecipeModification::applyModifications)
-                    .whenComplete((result, throwable) -> {
-                        hasUpdatedRecipeManager = false;
-                        hasUpdatedModifiers = false;
-                    });
-        }
     }
 
     /**
