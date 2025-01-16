@@ -28,6 +28,10 @@ java {
     withSourcesJar()
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 group = properties["group"].toString()
 version = properties["version"].toString()
 base.archivesName = properties["modid"].toString()
@@ -56,6 +60,7 @@ unimined.minecraft {
         accessWidener("src/main/resources/recipe_modification.accesswidener")
     }
 }
+
 
 unimined.minecraft(sourceSets.getByName("1.21.4")) {
     combineWith(sourceSets.main.get())
@@ -98,6 +103,10 @@ unimined.minecraft(sourceSets.getByName("neoforge")) {
     defaultRemapJar = true
 }
 
+unimined.minecraft(sourceSets.test.get()) {
+    combineWith("fabric")
+}
+
 unimined.minecraft(sourceSets.getByName("testmod")) {
     val neoforgeVersion: String by properties
     val minecraftVersion: String by properties
@@ -133,6 +142,7 @@ tasks.getByName<ProcessResources>("processNeoforgeResources") {
 
 val testmodModImplementation by configurations.getting
 val testmodCompileOnly by configurations.getting
+val testModImplementation by configurations.getting
 val apiImplementation by configurations.getting
 
 dependencies {
@@ -144,4 +154,7 @@ dependencies {
 
     testmodCompileOnly(sourceSets.main.get().output)
     testmodModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
+
+    testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
+    testmodModImplementation(sourceSets.getByName("fabric").output)
 }

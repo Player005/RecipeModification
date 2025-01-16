@@ -4,7 +4,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 
-@SuppressWarnings("deprecation")
 public interface RecipeHelper {
 
     void addAlternative(Ingredient ingredient, Item... items);
@@ -17,9 +16,7 @@ public interface RecipeHelper {
 
     void removeAlternative(Ingredient ingredient, TagKey<Item> itemTag);
 
-    default void replaceIngredient(Ingredient ingredient, Ingredient newIngredient) {
-
-    }
+    void replaceIngredient(Ingredient ingredient, Ingredient newIngredient);
 
     boolean isExactMatch(Ingredient ingredient, Item item);
 

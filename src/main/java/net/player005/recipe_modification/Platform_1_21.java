@@ -45,7 +45,7 @@ public class Platform_1_21 implements Platform {
 
         @Override
         public void addAlternative(Ingredient ingredient, Item... items) {
-            var newValues = (Ingredient.Value[]) ArrayUtils.addAll(getAccessor(ingredient).getValues(), items);
+            var newValues = ArrayUtils.addAll(getAccessor(ingredient).getValues(), (Ingredient.Value[]) items);
             getAccessor(ingredient).replaceValues(newValues);
         }
 
@@ -74,6 +74,11 @@ public class Platform_1_21 implements Platform {
             var newValues = new ArrayList<>(List.of(getAccessor(ingredient).getValues()));
             newValues.removeIf(value -> value instanceof Ingredient.TagValue(var tag) && itemTag.equals(tag));
             getAccessor(ingredient).replaceValues(newValues.toArray(new Ingredient.Value[0]));
+        }
+
+        @Override
+        public void replaceIngredient(Ingredient ingredient, Ingredient newIngredient) {
+            replaceIngredientValues(ingredient, getAccessor(newIngredient).getValues());
         }
 
         @Override
