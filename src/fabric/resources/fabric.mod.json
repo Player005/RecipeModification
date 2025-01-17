@@ -4,9 +4,13 @@
   "version": "${version}",
   "name": "${name}",
   "entrypoints": {
-    "main": ["net.player005.recipe_modification.ModFabric"]
+    "main": [
+      "net.player005.recipe_modification.ModFabric"
+    ]
   },
   "description": "${description}",
   "license": "${license}",
-  "authors": ["${authors}"]
+  "authors": [
+    "${authors}"
+  ]
 }

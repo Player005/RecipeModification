@@ -14,8 +14,8 @@ import org.jetbrains.annotations.Nullable;
 @FunctionalInterface
 public interface ResultItemModifier {
     /**
-     * @param recipe the recipe of which the result item should be modified
-     * @param result the current result item
+     * @param recipe      the recipe of which the result item should be modified
+     * @param result      the current result item
      * @param recipeInput the used RecipeInput when the recipe is assembled, or null when it is only previewed
      * @return the new result item
      */
