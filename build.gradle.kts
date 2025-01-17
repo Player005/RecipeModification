@@ -17,7 +17,7 @@ sourceSets {
     create("1.20.1")
     create("fabric")
     create("neoforge")
-    create("testmod")
+    create("gametests")
 }
 
 java {
@@ -113,7 +113,7 @@ unimined.minecraft(sourceSets.test.get()) {
     combineWith("fabric")
 }
 
-unimined.minecraft(sourceSets.getByName("testmod")) {
+unimined.minecraft(sourceSets.getByName("gametests")) {
     val neoforgeVersion: String by properties
     val minecraftVersion: String by properties
     val parchmentVersion: String by properties
@@ -146,9 +146,8 @@ tasks.getByName<ProcessResources>("processNeoforgeResources") {
     }
 }
 
-val testmodModImplementation by configurations.getting
-val testmodCompileOnly by configurations.getting
-val testModImplementation by configurations.getting
+val gametestsModImplementation by configurations.getting
+val gametestsCompileOnly by configurations.getting
 
 val impls by configurations.creating
 val global by configurations.creating
@@ -170,9 +169,9 @@ dependencies {
     impls("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
     impls(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 
-    testmodCompileOnly(sourceSets.main.get().output)
-    testmodModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
+    gametestsCompileOnly(sourceSets.main.get().output)
+    gametestsModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
 
     testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
-    testmodModImplementation(sourceSets.getByName("fabric").output)
+    gametestsModImplementation(sourceSets.getByName("fabric").output)
 }
