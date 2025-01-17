@@ -1,4 +1,4 @@
-package net.player005.recipe_modification;
+package net.player005.recipe_modification.api;
 
 import net.minecraft.world.item.crafting.Recipe;
 import org.jetbrains.annotations.NotNull;

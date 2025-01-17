@@ -1,4 +1,4 @@
-package net.player005.recipe_modification;
+package net.player005.recipe_modification.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
@@ -163,7 +163,8 @@ public abstract class RecipeModification {
         return getPlatform().getRecipesByName(recipeManager).get(id);
     }
 
-    static void initPlatform(Platform platform) {
+    @ApiStatus.Internal
+    public static void initPlatform(Platform platform) {
         RecipeModification.platform = platform;
     }
 

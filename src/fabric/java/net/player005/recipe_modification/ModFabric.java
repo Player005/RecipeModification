@@ -1,6 +1,7 @@
 package net.player005.recipe_modification;
 
 import net.fabricmc.api.ModInitializer;
+import net.player005.recipe_modification.api.RecipeModification;
 
 public class ModFabric implements ModInitializer {
     @Override

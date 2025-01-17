@@ -6,8 +6,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.player005.recipe_modification.RecipeModifier;
-import net.player005.recipe_modification.RecipeModifierParsingException;
+import net.player005.recipe_modification.api.RecipeModifier;
 
 import java.util.HashMap;
 import java.util.Map;

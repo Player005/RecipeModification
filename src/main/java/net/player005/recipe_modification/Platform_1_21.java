@@ -8,6 +8,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.player005.recipe_modification.api.Platform;
+import net.player005.recipe_modification.api.RecipeHelper;
 import net.player005.recipe_modification.mixin.RecipeManagerAccessor;
 import org.apache.commons.lang3.ArrayUtils;
 

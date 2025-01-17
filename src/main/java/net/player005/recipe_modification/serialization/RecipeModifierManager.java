@@ -10,8 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.player005.recipe_modification.RecipeModification;
-import net.player005.recipe_modification.RecipeModifierHolder;
+import net.player005.recipe_modification.api.RecipeModification;
+import net.player005.recipe_modification.api.RecipeModifierHolder;
 import org.slf4j.Logger;
 
 import java.util.Map;

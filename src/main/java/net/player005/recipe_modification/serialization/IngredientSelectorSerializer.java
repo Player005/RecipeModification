@@ -9,8 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Items;
-import net.player005.recipe_modification.IngredientSelector;
-import net.player005.recipe_modification.RecipeModifierParsingException;
+import net.player005.recipe_modification.api.IngredientSelector;
 
 import java.util.ArrayList;
 import java.util.HashMap;

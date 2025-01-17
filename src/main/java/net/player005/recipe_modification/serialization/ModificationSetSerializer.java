@@ -1,9 +1,8 @@
 package net.player005.recipe_modification.serialization;
 
 import com.google.gson.JsonElement;
-import net.player005.recipe_modification.ModificationSet;
-import net.player005.recipe_modification.RecipeModifier;
-import net.player005.recipe_modification.RecipeModifierParsingException;
+import net.player005.recipe_modification.api.ModificationSet;
+import net.player005.recipe_modification.api.RecipeModifier;
 
 public abstract class ModificationSetSerializer {
     public static ModificationSet fromJson(JsonElement json) {

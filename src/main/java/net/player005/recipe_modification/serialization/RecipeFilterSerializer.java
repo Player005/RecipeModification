@@ -7,8 +7,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.player005.recipe_modification.RecipeFilter;
-import net.player005.recipe_modification.RecipeModifierParsingException;
+import net.player005.recipe_modification.api.RecipeFilter;
 
 import java.util.HashMap;
 import java.util.Map;

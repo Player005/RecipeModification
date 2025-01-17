@@ -1,4 +1,4 @@
-package net.player005.recipe_modification;
+package net.player005.recipe_modification.api;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;

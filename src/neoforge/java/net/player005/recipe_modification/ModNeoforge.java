@@ -2,6 +2,7 @@ package net.player005.recipe_modification;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.player005.recipe_modification.api.RecipeModification;
 
 @Mod(RecipeModification.modID)
 public class ModNeoforge {
