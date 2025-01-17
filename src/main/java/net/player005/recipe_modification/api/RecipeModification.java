@@ -34,7 +34,7 @@ import java.util.function.Consumer;
  */
 public abstract class RecipeModification {
 
-    static final String modID = "recipe_modification";
+    public static final String modID = "recipe_modification";
     static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
     @SuppressWarnings("NotNullFieldNotInitialized")
     private static Platform platform;

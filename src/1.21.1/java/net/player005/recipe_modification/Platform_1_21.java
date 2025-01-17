@@ -12,11 +12,13 @@ import net.player005.recipe_modification.api.Platform;
 import net.player005.recipe_modification.api.RecipeHelper;
 import net.player005.recipe_modification.mixin.RecipeManagerAccessor;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNullByDefault;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@NotNullByDefault
 public class Platform_1_21 implements Platform {
     @Override
     public HolderLookup.Provider getRegistryAccess(RecipeManager recipeManager) {
