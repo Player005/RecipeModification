@@ -40,7 +40,11 @@ unimined.minecraft {
     val minecraftVersion: String by properties
     val parchmentVersion: String by properties
 
-    if (!this.sourceSet.name.startsWith("1.")) {
+    if (this.sourceSet.name.startsWith("1.")) {
+        runs.off = true
+        defaultRemapJar = false
+        defaultRemapSourcesJar = false
+    } else {
         version(minecraftVersion)
         mappings {
             intermediary()
@@ -122,7 +126,6 @@ unimined.minecraft(sourceSets.getByName("gametests")) {
     side("combined")
 
     mappings {
-        intermediary()
         mojmap()
         parchment(version = parchmentVersion)
 
@@ -173,5 +176,4 @@ dependencies {
     gametestsModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
 
     testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
-    gametestsModImplementation(sourceSets.getByName("fabric").output)
 }
