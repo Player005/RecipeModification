@@ -18,6 +18,8 @@ sourceSets {
     create("fabric")
     create("neoforge")
     create("gametests")
+    create("gametests_neoforge")
+    create("gametests_fabric")
 }
 
 java {
@@ -40,11 +42,7 @@ unimined.minecraft {
     val minecraftVersion: String by properties
     val parchmentVersion: String by properties
 
-    if (this.sourceSet.name.startsWith("1.")) {
-        runs.off = true
-        defaultRemapJar = false
-        defaultRemapSourcesJar = false
-    } else {
+    if (!this.sourceSet.name.startsWith("1.")) {
         version(minecraftVersion)
         mappings {
             intermediary()
@@ -54,8 +52,12 @@ unimined.minecraft {
             devFallbackNamespace("official")
         }
     }
-    side("combined")
 
+    if (!this.sourceSet.name.contains("fabric") && !this.sourceSet.name.contains("neoforge")) {
+        runs.off = true
+        defaultRemapJar = false
+        defaultRemapSourcesJar = false
+    }
 }
 
 unimined.minecraft(sourceSets.getByName("1.21.4")) {
@@ -118,12 +120,10 @@ unimined.minecraft(sourceSets.test.get()) {
 }
 
 unimined.minecraft(sourceSets.getByName("gametests")) {
-    val neoforgeVersion: String by properties
     val minecraftVersion: String by properties
     val parchmentVersion: String by properties
 
     version(minecraftVersion)
-    side("combined")
 
     mappings {
         mojmap()
@@ -131,9 +131,23 @@ unimined.minecraft(sourceSets.getByName("gametests")) {
 
         devFallbackNamespace("official")
     }
+}
 
+unimined.minecraft(sourceSets.getByName("gametests_neoforge")) {
+    val neoforgeVersion: String by properties
+
+    combineWith("gametests")
     neoForge {
         loader(neoforgeVersion)
+    }
+}
+
+unimined.minecraft(sourceSets.getByName("gametests_fabric")) {
+    val fabricVersion: String by properties
+
+    combineWith("gametests")
+    fabric {
+        loader(fabricVersion)
     }
 }
 
@@ -149,8 +163,11 @@ tasks.getByName<ProcessResources>("processNeoforgeResources") {
     }
 }
 
-val gametestsModImplementation by configurations.getting
 val gametestsCompileOnly by configurations.getting
+val gametests_neoforgeModImplementation by configurations.getting
+val gametests_fabricModImplementation by configurations.getting
+
+val fabricModImplementation by configurations.getting
 
 val impls by configurations.creating
 val global by configurations.creating
@@ -173,7 +190,10 @@ dependencies {
     impls(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 
     gametestsCompileOnly(sourceSets.main.get().output)
-    gametestsModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
+    gametests_neoforgeModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
+    gametests_fabricModImplementation(tasks.getByName("remapFabricJar").outputs.files)
+
+    fabricModImplementation(fabricApi.fabric("0.114.0+1.21.1"))
 
     testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
 }

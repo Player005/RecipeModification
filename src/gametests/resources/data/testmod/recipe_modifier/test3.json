@@ -1,9 +1,6 @@
 {
   "target_recipes": {
-    "type": "accepting_ingredient",
-    "item": {
-      "id": "minecraft:diamond"
-    }
+    "type": "all_recipes"
   },
   "modifiers": [
     {

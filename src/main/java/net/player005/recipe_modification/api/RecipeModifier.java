@@ -83,7 +83,8 @@ public interface RecipeModifier {
      */
     static RecipeModifier replaceIngredient(IngredientSelector selector, Ingredient newIngredient) {
         return (recipe, helper) -> {
-            for (var ingredient : selector.selectIngredients(recipe, helper)) {
+            var ingredients = selector.selectIngredients(recipe, helper);
+            for (var ingredient : ingredients) {
                 helper.replaceIngredient(ingredient, newIngredient);
             }
         };
