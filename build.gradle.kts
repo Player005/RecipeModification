@@ -191,7 +191,7 @@ dependencies {
 
     gametestsCompileOnly(sourceSets.main.get().output)
     gametests_neoforgeModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
-    gametests_fabricModImplementation(tasks.getByName("remapFabricJar").outputs.files)
+    gametests_fabricModImplementation(tasks.getByName("fabricJar").outputs.files)
 
     fabricModImplementation(fabricApi.fabric("0.114.0+1.21.1"))
 

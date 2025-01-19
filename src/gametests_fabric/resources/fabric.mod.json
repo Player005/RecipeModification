@@ -1,7 +1,7 @@
 {
+  "schemaVersion": 1,
   "id": "recipe_modification_test",
   "version": "1.0.0",
-  "schemaVersion": 1,
   "entrypoints": {
     "main": [
       "net.player005.recipe_modification_testmod.TestModFabric"

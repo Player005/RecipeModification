@@ -9,6 +9,7 @@ import net.player005.recipe_modification.api.RecipeModifier;
 public class TestMod {
 
     public static void init() {
+        System.out.println("initializing test mod");
         RecipeModification.registerModifier(
                 ResourceLocation.parse("testmod:test4"),
                 RecipeFilter.resultItemIs(Items.ACACIA_DOOR),
