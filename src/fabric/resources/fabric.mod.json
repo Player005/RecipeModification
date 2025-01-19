@@ -12,5 +12,8 @@
   "license": "${license}",
   "authors": [
     "${authors}"
+  ],
+  "mixins": [
+      "recipe_modification.mixins.json"
   ]
 }
