@@ -160,7 +160,7 @@ public abstract class RecipeModification {
      */
     public static RecipeHolder<?> getByID(ResourceLocation id) {
         checkInitialised("get recipe by ID");
-        return getPlatform().getRecipesByName(recipeManager).get(id);
+        return getPlatform().getRecipeByID(recipeManager, id);
     }
 
     @ApiStatus.Internal

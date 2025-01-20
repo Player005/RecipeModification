@@ -5,13 +5,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 
-import java.util.Map;
-
 public interface Platform {
 
     HolderLookup.Provider getRegistryAccess(RecipeManager recipeManager);
 
-    Map<ResourceLocation, RecipeHolder<?>> getRecipesByName(RecipeManager recipeManager);
+    RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id);
 
     RecipeHelper getHelper();
 }

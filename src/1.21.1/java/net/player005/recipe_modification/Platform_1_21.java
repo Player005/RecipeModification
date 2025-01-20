@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNullByDefault;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @NotNullByDefault
 public class Platform_1_21 implements Platform {
@@ -26,8 +25,8 @@ public class Platform_1_21 implements Platform {
     }
 
     @Override
-    public Map<ResourceLocation, RecipeHolder<?>> getRecipesByName(RecipeManager recipeManager) {
-        return ((RecipeManagerAccessor) recipeManager).getByName();
+    public RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id) {
+        return ((RecipeManagerAccessor) recipeManager).getByName().get(id);
     }
 
     @Override
