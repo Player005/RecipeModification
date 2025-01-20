@@ -189,6 +189,7 @@ sourceSets.forEach {
 
 tasks.getByName<Jar>("gametests_fabricJar") {
     from(sourceSets.getByName("gametests").resources)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
