@@ -1,3 +1,5 @@
+import org.gradle.jvm.tasks.Jar
+
 plugins {
     id("idea")
     id("java-library")
@@ -75,7 +77,9 @@ unimined.minecraft(sourceSets.getByName("1.21.1")) {
     combineWith(sourceSets.main.get())
 
     mappings {
+        intermediary()
         mojmap()
+        parchment(version = properties["parchmentVersion"].toString())
         devFallbackNamespace("official")
     }
     accessWidener {
@@ -181,6 +185,10 @@ sourceSets.forEach {
 sourceSets.forEach {
     it.runtimeClasspath += global
     it.compileClasspath += global
+}
+
+tasks.getByName<Jar>("gametests_fabricJar") {
+    from(sourceSets.getByName("gametests").resources)
 }
 
 dependencies {

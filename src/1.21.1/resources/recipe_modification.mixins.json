@@ -6,7 +6,6 @@
   "mixins": [
     "IngredientMixin",
     "RecipeManagerAccessor",
-    "RecipeManagerMixin",
     "RecipeMixin",
     "RecipeMixin2",
     "ReloadableServerResourcesMixin"
