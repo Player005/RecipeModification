@@ -32,20 +32,106 @@ java {
     withSourcesJar()
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 group = properties["group"].toString()
 version = properties["version"].toString()
 base.archivesName = properties["modid"].toString()
 
-unimined.minecraft {
-    val minecraftVersion: String by properties
-    val parchmentVersion: String by properties
+unimined {
+    minecraft { // main sourceset
+        val minecraftVersion: String by properties
+        val parchmentVersion: String by properties
 
-    if (!this.sourceSet.name.startsWith("1.")) {
-        version(minecraftVersion)
+        if (!this.sourceSet.name.startsWith("1.")) {
+            version(minecraftVersion)
+            mappings {
+                intermediary()
+                mojmap()
+                parchment(version = parchmentVersion)
+
+                devFallbackNamespace("official")
+            }
+        }
+
+        if (!this.sourceSet.name.contains("fabric") && !this.sourceSet.name.contains("neoforge")) {
+            runs.off = true
+            defaultRemapJar = false
+            defaultRemapSourcesJar = false
+        }
+    }
+
+    // -- version implementations --
+
+    minecraft(sourceSets.getByName("1.21.4")) {
+        version("1.21.4")
+        combineWith(sourceSets.main.get())
+
+        mappings {
+            mojmap()
+            devFallbackNamespace("official")
+        }
+    }
+
+    minecraft(sourceSets.getByName("1.21.1")) {
+        version("1.21.1")
+        combineWith(sourceSets.main.get())
+
+        mappings {
+            intermediary()
+            mojmap()
+            parchment(version = properties["parchmentVersion"].toString())
+            devFallbackNamespace("official")
+        }
+        accessWidener {
+            accessWidener("src/1.21.1/resources/recipe_modification.accesswidener")
+        }
+    }
+
+    minecraft(sourceSets.getByName("1.20.1")) {
+        version("1.20.1")
+        combineWith(sourceSets.main.get())
+
+        mappings {
+            mojmap()
+            devFallbackNamespace("official")
+        }
+    }
+
+    // -- modloaders --
+
+    minecraft(sourceSets.getByName("fabric")) {
+        val fabricVersion: String by properties
+
+        combineWith("1.21.1")
+        fabric {
+            loader(fabricVersion)
+            accessWidener("src/1.21.1/resources/recipe_modification.accesswidener")
+        }
+        defaultRemapJar = true
+    }
+
+    minecraft(sourceSets.getByName("neoforge")) {
+        val neoforgeVersion: String by properties
+
+        combineWith("1.21.1")
+        neoForge {
+            loader(neoforgeVersion)
+            accessTransformer(aw2at("src/1.21.1/resources/recipe_modification.accesswidener"))
+        }
+        defaultRemapJar = true
+    }
+
+    // -- tests --
+
+    minecraft(sourceSets.test.get()) { // unit tests (using fabric)
+        combineWith("fabric")
+    }
+
+    minecraft(sourceSets.getByName("gametests")) { // gametests (core)
+        val minecraftVersion: String by properties
+        val parchmentVersion: String by properties
+
+        if (!sourceSet.name.startsWith("1.")) version(minecraftVersion)
+
         mappings {
             intermediary()
             mojmap()
@@ -55,115 +141,44 @@ unimined.minecraft {
         }
     }
 
-    if (!this.sourceSet.name.contains("fabric") && !this.sourceSet.name.contains("neoforge")) {
-        runs.off = true
-        defaultRemapJar = false
-        defaultRemapSourcesJar = false
+    minecraft(sourceSets.getByName("gametests_neoforge")) { // gametests (neo implementation)
+        val neoforgeVersion: String by properties
+
+        combineWith("gametests")
+        neoForge {
+            loader(neoforgeVersion)
+        }
+    }
+
+    minecraft(sourceSets.getByName("gametests_fabric")) { // gametests (fabric implementation)
+        val fabricVersion: String by properties
+
+        combineWith("gametests")
+        fabric {
+            loader(fabricVersion)
+        }
     }
 }
 
-unimined.minecraft(sourceSets.getByName("1.21.4")) {
-    version("1.21.4")
-    combineWith(sourceSets.main.get())
-
-    mappings {
-        mojmap()
-        devFallbackNamespace("official")
+tasks {
+    test {
+        useJUnitPlatform()
     }
-}
 
-unimined.minecraft(sourceSets.getByName("1.21.1")) {
-    version("1.21.1")
-    combineWith(sourceSets.main.get())
-
-    mappings {
-        intermediary()
-        mojmap()
-        parchment(version = properties["parchmentVersion"].toString())
-        devFallbackNamespace("official")
+    getByName<ProcessResources>("processFabricResources") {
+        filesMatching("fabric.mod.json") {
+            expand(project.properties)
+        }
     }
-    accessWidener {
-        accessWidener("src/1.21.1/resources/recipe_modification.accesswidener")
+
+    getByName<ProcessResources>("processNeoforgeResources") {
+        filesMatching("META-INF/neoforge.mods.toml") {
+            expand(project.properties)
+        }
     }
-}
 
-unimined.minecraft(sourceSets.getByName("1.20.1")) {
-    version("1.20.1")
-    combineWith(sourceSets.main.get())
-
-    mappings {
-        mojmap()
-        devFallbackNamespace("official")
-    }
-}
-
-unimined.minecraft(sourceSets.getByName("fabric")) {
-    val fabricVersion: String by properties
-
-    combineWith("1.21.1")
-    fabric {
-        loader(fabricVersion)
-        accessWidener("src/1.21.1/resources/recipe_modification.accesswidener")
-    }
-    defaultRemapJar = true
-}
-
-unimined.minecraft(sourceSets.getByName("neoforge")) {
-    val neoforgeVersion: String by properties
-
-    combineWith("1.21.1")
-    neoForge {
-        loader(neoforgeVersion)
-        accessTransformer(aw2at("src/1.21.1/resources/recipe_modification.accesswidener"))
-    }
-    defaultRemapJar = true
-}
-
-unimined.minecraft(sourceSets.test.get()) {
-    combineWith("fabric")
-}
-
-unimined.minecraft(sourceSets.getByName("gametests")) {
-    val minecraftVersion: String by properties
-    val parchmentVersion: String by properties
-
-    version(minecraftVersion)
-
-    mappings {
-        mojmap()
-        parchment(version = parchmentVersion)
-
-        devFallbackNamespace("official")
-    }
-}
-
-unimined.minecraft(sourceSets.getByName("gametests_neoforge")) {
-    val neoforgeVersion: String by properties
-
-    combineWith("gametests")
-    neoForge {
-        loader(neoforgeVersion)
-    }
-}
-
-unimined.minecraft(sourceSets.getByName("gametests_fabric")) {
-    val fabricVersion: String by properties
-
-    combineWith("gametests")
-    fabric {
-        loader(fabricVersion)
-    }
-}
-
-tasks.getByName<ProcessResources>("processFabricResources") {
-    filesMatching("fabric.mod.json") {
-        expand(properties)
-    }
-}
-
-tasks.getByName<ProcessResources>("processNeoforgeResources") {
-    filesMatching("META-INF/neoforge.mods.toml") {
-        expand(properties)
+    getByName<Jar>("gametests_fabricJar") {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 }
 
@@ -185,11 +200,6 @@ sourceSets.forEach {
 sourceSets.forEach {
     it.runtimeClasspath += global
     it.compileClasspath += global
-}
-
-tasks.getByName<Jar>("gametests_fabricJar") {
-    from(sourceSets.getByName("gametests").resources)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
