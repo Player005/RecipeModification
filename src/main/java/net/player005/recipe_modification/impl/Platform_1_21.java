@@ -1,4 +1,4 @@
-package net.player005.recipe_modification;
+package net.player005.recipe_modification.impl;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +10,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.player005.recipe_modification.api.Platform;
 import net.player005.recipe_modification.api.RecipeHelper;
-import net.player005.recipe_modification.mixin.RecipeManagerAccessor;
+import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNullByDefault;
 

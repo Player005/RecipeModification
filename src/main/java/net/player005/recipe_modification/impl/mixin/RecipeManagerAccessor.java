@@ -1,4 +1,4 @@
-package net.player005.recipe_modification.mixin;
+package net.player005.recipe_modification.impl.mixin;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;

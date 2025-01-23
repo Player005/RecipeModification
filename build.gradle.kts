@@ -14,9 +14,6 @@ repositories {
 }
 
 sourceSets {
-    create("1.21.4")
-    create("1.21.1")
-    create("1.20.1")
     create("fabric")
     create("neoforge")
     create("gametests")
@@ -41,15 +38,17 @@ unimined {
         val minecraftVersion: String by properties
         val parchmentVersion: String by properties
 
-        if (!this.sourceSet.name.startsWith("1.")) {
-            version(minecraftVersion)
-            mappings {
-                intermediary()
-                mojmap()
-                parchment(version = parchmentVersion)
+        version(minecraftVersion)
+        mappings {
+            intermediary()
+            mojmap()
+            parchment(version = parchmentVersion)
 
-                devFallbackNamespace("official")
-            }
+            devFallbackNamespace("official")
+        }
+
+        accessWidener {
+            accessWidener("src/main/resources/recipe_modification.accesswidener")
         }
 
         if (!this.sourceSet.name.contains("fabric") && !this.sourceSet.name.contains("neoforge")) {
@@ -59,52 +58,15 @@ unimined {
         }
     }
 
-    // -- version implementations --
-
-    minecraft(sourceSets.getByName("1.21.4")) {
-        version("1.21.4")
-        combineWith(sourceSets.main.get())
-
-        mappings {
-            mojmap()
-            devFallbackNamespace("official")
-        }
-    }
-
-    minecraft(sourceSets.getByName("1.21.1")) {
-        version("1.21.1")
-        combineWith(sourceSets.main.get())
-
-        mappings {
-            intermediary()
-            mojmap()
-            parchment(version = properties["parchmentVersion"].toString())
-            devFallbackNamespace("official")
-        }
-        accessWidener {
-            accessWidener("src/1.21.1/resources/recipe_modification.accesswidener")
-        }
-    }
-
-    minecraft(sourceSets.getByName("1.20.1")) {
-        version("1.20.1")
-        combineWith(sourceSets.main.get())
-
-        mappings {
-            mojmap()
-            devFallbackNamespace("official")
-        }
-    }
-
     // -- modloaders --
 
     minecraft(sourceSets.getByName("fabric")) {
         val fabricVersion: String by properties
 
-        combineWith("1.21.1")
+        combineWith(sourceSets.main.get())
         fabric {
             loader(fabricVersion)
-            accessWidener("src/1.21.1/resources/recipe_modification.accesswidener")
+            accessWidener("src/main/resources/recipe_modification.accesswidener")
         }
         defaultRemapJar = true
     }
@@ -112,10 +74,10 @@ unimined {
     minecraft(sourceSets.getByName("neoforge")) {
         val neoforgeVersion: String by properties
 
-        combineWith("1.21.1")
+        combineWith(sourceSets.main.get())
         neoForge {
             loader(neoforgeVersion)
-            accessTransformer(aw2at("src/1.21.1/resources/recipe_modification.accesswidener"))
+            accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
         }
         defaultRemapJar = true
     }
@@ -130,8 +92,7 @@ unimined {
         val minecraftVersion: String by properties
         val parchmentVersion: String by properties
 
-        if (!sourceSet.name.startsWith("1.")) version(minecraftVersion)
-
+        version(minecraftVersion)
         mappings {
             intermediary()
             mojmap()
@@ -141,7 +102,7 @@ unimined {
         }
     }
 
-    minecraft(sourceSets.getByName("gametests_neoforge")) { // gametests (neo implementation)
+    minecraft(sourceSets.getByName("gametests_neoforge")) { // gametests (neoforge implementation)
         val neoforgeVersion: String by properties
 
         combineWith("gametests")
@@ -188,14 +149,7 @@ val gametests_fabricModImplementation by configurations.getting
 
 val fabricModImplementation by configurations.getting
 
-val impls by configurations.creating
 val global by configurations.creating
-
-sourceSets.forEach {
-    if (!it.name.startsWith("1.")) return@forEach
-    it.runtimeClasspath += impls
-    it.compileClasspath += impls
-}
 
 sourceSets.forEach {
     it.runtimeClasspath += global
@@ -205,8 +159,8 @@ sourceSets.forEach {
 dependencies {
     global("org.jetbrains:annotations:26.0.1")
 
-    impls("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
-    impls(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
+    global("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
+    global(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 
     gametestsCompileOnly(sourceSets.main.get().output)
     gametests_neoforgeModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)

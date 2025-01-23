@@ -1,4 +1,4 @@
-package net.player005.recipe_modification.mixin;
+package net.player005.recipe_modification.impl.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.server.ReloadableServerResources;

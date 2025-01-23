@@ -1,9 +1,9 @@
-package net.player005.recipe_modification.mixin;
+package net.player005.recipe_modification.impl.mixin;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.player005.recipe_modification.IngredientAccessor;
+import net.player005.recipe_modification.impl.IngredientAccessor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

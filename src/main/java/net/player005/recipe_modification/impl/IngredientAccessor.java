@@ -1,4 +1,4 @@
-package net.player005.recipe_modification;
+package net.player005.recipe_modification.impl;
 
 import net.minecraft.world.item.crafting.Ingredient;
 
