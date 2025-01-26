@@ -1,6 +1,8 @@
 package net.player005.recipe_modification.unit_tests;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
@@ -58,7 +60,7 @@ public class RecipeFilterTest {
     @Contract("_, _, _ -> new")
     public static @NotNull RecipeHolder<Recipe<CraftingInput>> mockRecipeHolder(String name, ItemStack resultItem, Ingredient... ingredients) {
         return new RecipeHolder<>(
-                ResourceLocation.fromNamespaceAndPath("test", name),
+                ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath("test", name)),
                 new MockRecipe(resultItem, ingredients)
         );
     }

@@ -1,17 +1,17 @@
 package net.player005.recipe_modification.impl;
 
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.core.HolderSet;
+import net.minecraft.world.item.Item;
+import org.spongepowered.asm.mixin.Unique;
 
 public interface IngredientAccessor {
-    default void replaceValues(Ingredient.Value[] values) {
-        throw new RuntimeException();
+
+    default HolderSet<Item> getValues() {
+        throw new IllegalStateException();
     }
 
-    default Ingredient.Value[] getValues() {
-        throw new RuntimeException();
-    }
-
-    default void removeValue(Ingredient.Value value) {
-        throw new RuntimeException();
+    @Unique
+    default void replaceValues(HolderSet<Item> newValues) {
+        throw new IllegalStateException();
     }
 }

@@ -104,7 +104,7 @@ public abstract class RecipeModification {
         AtomicReference<ResourceLocation> found = new AtomicReference<>();
         forAllRecipes(recipeHolder -> {
             if (recipeHolder.value().equals(recipe)) {
-                found.set(recipeHolder.id());
+                found.set(recipeHolder.id().location());
             }
         });
         return found.get();
@@ -116,7 +116,7 @@ public abstract class RecipeModification {
      * @param recipeHolder The recipe to remove
      */
     public static void removeRecipe(RecipeHolder<?> recipeHolder) {
-        toRemove.add(recipeHolder.id());
+        toRemove.add(recipeHolder.id().location());
     }
 
     /**
@@ -275,7 +275,8 @@ public abstract class RecipeModification {
 
         var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
-            var result = recipeHolder.value().getResultItem(getRegistryAccess());
+            var result = Util.getResultItem(recipeHolder);
+            if (result == null) continue;
             byResultBuilder.put(result.getItem(), recipeHolder);
         }
 
@@ -315,10 +316,9 @@ public abstract class RecipeModification {
 
 
             for (ResourceLocation id : toRemove) {
-                if (recipeHolder.id().equals(id)) {
+                if (recipeHolder.id().location().equals(id)) {
                     // remove recipe from both maps stored in RecipeManager
-                    recipeManager.getRecipes().remove(recipeHolder); // remove from RecipeManager#byName
-                    recipeManager.getOrderedRecipes().remove(recipeHolder); // remove from RecipeManager#byType
+                    recipeManager.getRecipes().remove(recipeHolder); // TODO: move to platform
                 }
             }
             modified += appliedOnRecipe;

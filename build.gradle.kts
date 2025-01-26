@@ -47,10 +47,6 @@ unimined {
             devFallbackNamespace("official")
         }
 
-        accessWidener {
-            accessWidener("src/main/resources/recipe_modification.accesswidener")
-        }
-
         if (!this.sourceSet.name.contains("fabric") && !this.sourceSet.name.contains("neoforge")) {
             runs.off = true
             defaultRemapJar = false
@@ -66,18 +62,24 @@ unimined {
         combineWith(sourceSets.main.get())
         fabric {
             loader(fabricVersion)
-            accessWidener("src/main/resources/recipe_modification.accesswidener")
         }
         defaultRemapJar = true
     }
 
     minecraft(sourceSets.getByName("neoforge")) {
         val neoforgeVersion: String by properties
+        val parchmentVersion: String by properties
 
         combineWith(sourceSets.main.get())
         neoForge {
             loader(neoforgeVersion)
-            accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
+        }
+        mappings {
+            searge()
+            mojmap()
+            parchment(version = parchmentVersion)
+
+            devFallbackNamespace("official")
         }
         defaultRemapJar = true
     }

@@ -37,7 +37,7 @@ public interface RecipeFilter {
      */
     static RecipeFilter acceptsIngredient(ItemStack item) {
         return (recipe, registryAccess) -> {
-            for (var ingredient : recipe.value().getIngredients())
+            for (var ingredient : recipe.value().placementInfo().ingredients())
                 if (ingredient.test(item)) return true;
             return false;
         };
@@ -47,28 +47,34 @@ public interface RecipeFilter {
      * Returns a recipe filter that filters for recipes that create the given result item.
      */
     static RecipeFilter resultItemIs(Item item) {
-        return (recipe, registryAccess) -> recipe.value().getResultItem(registryAccess).is(item);
+        return (recipe, registryAccess) -> {
+            var resultItem = Util.getResultItem(recipe);
+            return resultItem != null && resultItem.is(item);
+        };
     }
 
     /**
      * Returns a recipe filter that filters for recipes that create a result item contained in the given tag.
      */
     static RecipeFilter resultItemIs(TagKey<Item> itemTag) {
-        return (recipe, registryAccess) -> recipe.value().getResultItem(registryAccess).is(itemTag);
+        return (recipe, registryAccess) -> {
+            var resultItem = Util.getResultItem(recipe);
+            return resultItem != null && resultItem.is(itemTag);
+        };
     }
 
     /**
      * Returns a recipe filter that filters for the recipe with the given id.
      */
     static RecipeFilter idEquals(ResourceLocation id) {
-        return (recipe, registryAccess) -> recipe.id().equals(id);
+        return (recipe, registryAccess) -> recipe.id().location().equals(id);
     }
 
     /**
      * Returns a recipe filter that filters for recipes in the given namespace.
      */
     static RecipeFilter namespaceEquals(String group) {
-        return (recipe, registryAccess) -> recipe.id().getNamespace().equals(group);
+        return (recipe, registryAccess) -> recipe.id().location().getNamespace().equals(group);
     }
 
     /**

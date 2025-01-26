@@ -1,14 +1,15 @@
 package net.player005.recipe_modification.api;
 
+import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * An object that selects ingredients based on certain criteria when given a recipe.
@@ -22,20 +23,20 @@ public interface IngredientSelector {
     /**
      * Always select all ingredients of the given recipe.
      */
-    IngredientSelector ALL_INGREDIENTS = (recipe, helper) -> recipe.getIngredients().toArray(Ingredient[]::new);
+    IngredientSelector ALL_INGREDIENTS = (recipe, helper) -> recipe.placementInfo().ingredients().toArray(Ingredient[]::new);
 
     /**
      * Selects ingredients by their id/ordinal.
      */
     static IngredientSelector byOrdinals(int... numbers) {
-        return (recipe, helper) -> Arrays.stream(numbers).mapToObj(recipe.getIngredients()::get).toArray(Ingredient[]::new);
+        return (recipe, helper) -> Arrays.stream(numbers).mapToObj(recipe.placementInfo().ingredients()::get).toArray(Ingredient[]::new);
     }
 
     /**
      * Selects ingredients by their id/ordinal.
      */
     static IngredientSelector byOrdinals(List<Integer> numbers) {
-        return (recipe, helper) -> numbers.stream().map(recipe.getIngredients()::get).toArray(Ingredient[]::new);
+        return (recipe, helper) -> numbers.stream().map(recipe.placementInfo().ingredients()::get).toArray(Ingredient[]::new);
     }
 
     /**
@@ -46,9 +47,9 @@ public interface IngredientSelector {
     static IngredientSelector byItem(Item item) {
         return (recipe, helper) -> {
             var toReturn = new ArrayList<Ingredient>();
-            for (var ingredient : recipe.getIngredients())
-                for (ItemStack ingredientItem : ingredient.getItems())
-                    if (ingredientItem.is(item)) toReturn.add(ingredient);
+            for (var ingredient : recipe.placementInfo().ingredients())
+                for (Holder<Item> ingredientItem : ingredient.items().collect(Collectors.toSet()))
+                    if (item.equals(ingredientItem.value())) toReturn.add(ingredient);
             return toReturn.toArray(Ingredient[]::new);
         };
     }
@@ -61,7 +62,7 @@ public interface IngredientSelector {
     static IngredientSelector matchingItem(Item item) {
         return (recipe, helper) -> {
             var toReturn = new ArrayList<Ingredient>();
-            for (var ingredient : recipe.getIngredients())
+            for (var ingredient : recipe.placementInfo().ingredients())
                 if (helper.isExactMatch(ingredient, item)) toReturn.add(ingredient);
             return toReturn.toArray(Ingredient[]::new);
         };
@@ -73,7 +74,7 @@ public interface IngredientSelector {
     static IngredientSelector matchingTag(TagKey<Item> tag) {
         return (recipe, helper) -> {
             var toReturn = new ArrayList<Ingredient>();
-            for (var ingredient : recipe.getIngredients())
+            for (var ingredient : recipe.placementInfo().ingredients())
                 if (helper.matchesTag(ingredient, tag)) toReturn.add(ingredient);
             return toReturn.toArray(Ingredient[]::new);
         };

@@ -28,7 +28,7 @@ public abstract class RecipeModifierSerializer {
 
     static {
         registerDeserializer("add_ingredient", object -> {
-            var ingredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("ingredient")).getOrThrow();
+            var ingredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("ingredient")).getPartialOrThrow();
             return RecipeModifier.addIngredient(ingredient);
         });
 
@@ -39,23 +39,23 @@ public abstract class RecipeModifierSerializer {
 
         registerDeserializer("replace_ingredient", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredient"));
-            var newIngredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("new_ingredient")).getOrThrow();
+            var newIngredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("new_ingredient")).getPartialOrThrow();
             return RecipeModifier.replaceIngredient(ingredientSelector, newIngredient);
         });
 
         registerDeserializer("add_alternative", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredients"));
-            var alternative = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("alternative")).getOrThrow();
+            var alternative = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("alternative")).getPartialOrThrow();
             return RecipeModifier.addAlternative(ingredientSelector, alternative);
         });
 
         registerDeserializer("replace_result", object -> {
-            var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result")).getOrThrow();
+            var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result")).getPartialOrThrow();
             return RecipeModifier.replaceResultItem(newResult);
         });
 
         registerDeserializer("modify_result_components", object -> {
-            var patch = DataComponentPatch.CODEC.parse(JsonOps.INSTANCE, object.get("components")).getOrThrow();
+            var patch = DataComponentPatch.CODEC.parse(JsonOps.INSTANCE, object.get("components")).getPartialOrThrow();
             return RecipeModifier.addResultComponents(patch);
         });
     }

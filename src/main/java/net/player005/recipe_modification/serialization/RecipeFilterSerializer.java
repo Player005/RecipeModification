@@ -42,7 +42,7 @@ public abstract class RecipeFilterSerializer {
             return RecipeFilter.acceptsIngredient(item);
         });
         registerSerializer("result_item_is", (json) -> {
-            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString()));
+            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString())).orElseThrow().value();
             return RecipeFilter.resultItemIs(item);
         });
         registerSerializer("id_equals", (json) -> {

@@ -6,9 +6,9 @@
     {
       "type": "replace_ingredient",
       "ingredient": "oak_planks",
-      "new_ingredient": {
-        "item": "minecraft:netherite_ingot"
-      }
+      "new_ingredient": [
+        "minecraft:netherite_ingot"
+      ]
     }
   ]
 }

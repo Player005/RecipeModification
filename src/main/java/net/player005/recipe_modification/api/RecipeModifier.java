@@ -27,7 +27,7 @@ public interface RecipeModifier {
     static RecipeModifier removeIngredients(IngredientSelector selector) {
         return (recipe, helper) -> {
             for (var ingredient : selector.selectIngredients(recipe, helper)) {
-                recipe.getIngredients().remove(ingredient);
+                recipe.placementInfo().ingredients().remove(ingredient);
             }
         };
     }
@@ -36,14 +36,14 @@ public interface RecipeModifier {
      * Tries to add the given ingredient to the recipe.
      */
     static RecipeModifier addIngredient(Ingredient ingredient) {
-        return (recipe, helper) -> recipe.getIngredients().add(ingredient);
+        return (recipe, helper) -> recipe.placementInfo().ingredients().add(ingredient);
     }
 
     /**
      * Removes the ingredient at the given index.
      */
     static RecipeModifier removeIngredient(int index) {
-        return (recipe, helper) -> recipe.getIngredients().remove(index);
+        return (recipe, helper) -> recipe.placementInfo().ingredients().remove(index);
     }
 
     /**
@@ -51,7 +51,7 @@ public interface RecipeModifier {
      */
     static RecipeModifier addAlternative(Item original, Item alternative) {
         return (recipe, helper) -> {
-            for (var ingredient : recipe.getIngredients())
+            for (var ingredient : recipe.placementInfo().ingredients())
                 if (ingredient.test(original.getDefaultInstance()))
                     helper.addAlternative(ingredient, alternative);
         };
@@ -62,7 +62,7 @@ public interface RecipeModifier {
      */
     static RecipeModifier addAlternative(Item original, TagKey<Item> alternative) {
         return (recipe, helper) -> {
-            for (var ingredient : recipe.getIngredients())
+            for (var ingredient : recipe.placementInfo().ingredients())
                 if (ingredient.test(original.getDefaultInstance()))
                     helper.addAlternative(ingredient, alternative);
         };

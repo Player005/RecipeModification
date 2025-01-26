@@ -5,7 +5,7 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.player005.recipe_modification.api.IngredientSelector;
-import net.player005.recipe_modification.Platform_1_21;
+import net.player005.recipe_modification.impl.Platform_1_21_4;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public class IngredientSelectorTest {
         var recipe1 = mockRecipeHolder("recipe1", Items.DANDELION.getDefaultInstance(), appleIngredient, appleIngredient);
         var recipe2 = mockRecipeHolder("recipe2", Items.IRON_AXE.getDefaultInstance(), iceIngredient);
 
-        var helper = new Platform_1_21.RecipeHelper_1_21();
+        var helper = new Platform_1_21_4.RecipeHelper_1_21_4();
 
         var gAppleSelector = IngredientSelector.byItem(Items.GOLDEN_APPLE);
         Assertions.assertEquals(2, gAppleSelector.selectIngredients(recipe1.value(), helper).length);
