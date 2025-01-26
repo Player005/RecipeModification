@@ -2,7 +2,6 @@ package net.player005.recipe_modification.impl;
 
 import com.google.common.collect.Lists;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -27,10 +26,6 @@ import java.util.stream.Stream;
 
 @NotNullByDefault
 public class Platform_1_21_4 implements Platform {
-    @Override
-    public HolderLookup.Provider getRegistryAccess(RecipeManager recipeManager) {
-        return ((RecipeManagerAccessor) recipeManager).getRegistries();
-    }
 
     @Override
     public RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id) {
@@ -85,11 +80,11 @@ public class Platform_1_21_4 implements Platform {
 
         @Override
         public void addAlternative(Ingredient ingredient, Ingredient alternative) {
-            var addedValues = getHolderStream(ingredient).toList();
-            var newValues = getHolderStream(ingredient).collect(Collectors.toList());
+            var addedValues = getHolderStream(alternative).collect(Collectors.toSet());
+            var newValues = getHolderStream(ingredient).collect(Collectors.toSet());
             newValues.addAll(addedValues);
 
-            getAccessor(ingredient).replaceValues(HolderSet.direct(newValues));
+            getAccessor(ingredient).replaceValues(HolderSet.direct(newValues.stream().toList()));
         }
 
         @Override

@@ -1,8 +1,6 @@
 package net.player005.recipe_modification.serialization;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
@@ -20,7 +18,6 @@ import java.util.Map;
 
 public class RecipeModifierManager extends SimpleJsonResourceReloadListener<JsonElement> {
 
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public RecipeModifierManager() {

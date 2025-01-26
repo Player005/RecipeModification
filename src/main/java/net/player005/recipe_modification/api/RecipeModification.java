@@ -50,6 +50,7 @@ public abstract class RecipeModification {
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
 
     private static @UnknownNullability RecipeManager recipeManager;
+    private static HolderLookup.@UnknownNullability Provider registries;
 
     /**
      * This method can be used to have some code be executed when the server is starting, right before
@@ -191,8 +192,8 @@ public abstract class RecipeModification {
      * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      */
     public static HolderLookup.Provider getRegistryAccess() {
-        checkInitialised("get the RecipeManager's registry access");
-        return getPlatform().getRegistryAccess(getRecipeManager());
+        if (registries == null) throw new IllegalStateException("Registry access not initialised yet");
+        return registries;
     }
 
     /**
@@ -262,6 +263,11 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static void updateJsonRecipeModifiers(ImmutableList<RecipeModifierHolder> modifiers) {
         modifiersFromDatapack = modifiers;
+    }
+
+    @ApiStatus.Internal
+    public static void initRegistries(HolderLookup.Provider registries) {
+        RecipeModification.registries = registries;
     }
 
     /**

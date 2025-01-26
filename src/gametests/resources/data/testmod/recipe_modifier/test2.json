@@ -9,9 +9,9 @@
     {
       "type": "add_alternative",
       "ingredients": "minecraft:stone",
-      "alternative": {
-        "id": "minecraft:dirt"
-      }
+      "alternative": [
+        "minecraft:dirt"
+      ]
     }
   ]
 }
