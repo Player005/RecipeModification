@@ -1,6 +1,8 @@
 package net.player005.recipe_modification.impl.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.player005.recipe_modification.api.RecipeModification;
@@ -24,8 +26,8 @@ public class RecipeMixin2 {
 
     @SuppressWarnings("MixinAnnotationTarget")
     @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "assemble", args =
-            {RecipeInput.class, net.minecraft.core.HolderLookup.Provider.class}, ret = ItemStack.class), require = 0)
-    public void modifyAssemble(CallbackInfoReturnable<ItemStack> cir, @Local(argsOnly = true) RecipeInput recipeInput) {
+            {Container.class, RegistryAccess.class}, ret = ItemStack.class), require = 0)
+    public void modifyAssemble(CallbackInfoReturnable<ItemStack> cir, @Local(argsOnly = true) Container recipeInput) {
         cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput).copy());
     }
 

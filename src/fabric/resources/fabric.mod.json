@@ -5,7 +5,7 @@
   "name": "${name}",
   "entrypoints": {
     "main": [
-      "net.player005.recipe_modification.ModFabric"
+      "net.player005.recipe_modification.fabric.ModFabric"
     ]
   },
   "description": "${description}",
@@ -14,6 +14,7 @@
     "${authors}"
   ],
   "mixins": [
-      "recipe_modification.mixins.json"
+    "recipe_modification.mixins.json",
+    "recipe_modification_fabric.mixins.json"
   ]
 }

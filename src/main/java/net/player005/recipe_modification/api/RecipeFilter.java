@@ -1,11 +1,11 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.Recipe;
 
 /**
  * A simple functional interface to filter recipes.
@@ -25,7 +25,7 @@ public interface RecipeFilter {
      * @param recipe the given recipe to test
      * @return if the test was successful
      */
-    boolean shouldApply(RecipeHolder<?> recipe, HolderLookup.Provider registryAccess);
+    boolean shouldApply(Recipe<?> recipe, RegistryAccess registryAccess);
 
     /**
      * A simple recipe filter that always returns {@code true}.
@@ -37,7 +37,7 @@ public interface RecipeFilter {
      */
     static RecipeFilter acceptsIngredient(ItemStack item) {
         return (recipe, registryAccess) -> {
-            for (var ingredient : recipe.value().getIngredients())
+            for (var ingredient : recipe.getIngredients())
                 if (ingredient.test(item)) return true;
             return false;
         };
@@ -47,28 +47,28 @@ public interface RecipeFilter {
      * Returns a recipe filter that filters for recipes that create the given result item.
      */
     static RecipeFilter resultItemIs(Item item) {
-        return (recipe, registryAccess) -> recipe.value().getResultItem(registryAccess).is(item);
+        return (recipe, registryAccess) -> RecipeModification.tryGetResult(recipe, registryAccess).is(item);
     }
 
     /**
      * Returns a recipe filter that filters for recipes that create a result item contained in the given tag.
      */
     static RecipeFilter resultItemIs(TagKey<Item> itemTag) {
-        return (recipe, registryAccess) -> recipe.value().getResultItem(registryAccess).is(itemTag);
+        return (recipe, registryAccess) -> recipe.getResultItem(registryAccess).is(itemTag);
     }
 
     /**
      * Returns a recipe filter that filters for the recipe with the given id.
      */
     static RecipeFilter idEquals(ResourceLocation id) {
-        return (recipe, registryAccess) -> recipe.id().equals(id);
+        return (recipe, registryAccess) -> recipe.getId().equals(id);
     }
 
     /**
      * Returns a recipe filter that filters for recipes in the given namespace.
      */
     static RecipeFilter namespaceEquals(String group) {
-        return (recipe, registryAccess) -> recipe.id().getNamespace().equals(group);
+        return (recipe, registryAccess) -> recipe.getId().getNamespace().equals(group);
     }
 
     /**

@@ -42,12 +42,12 @@ public abstract class IngredientSelectorSerializer {
 
     private static IngredientSelector fromString(String string) {
         if (string.startsWith("#"))
-            return IngredientSelector.matchingTag(TagKey.create(Registries.ITEM, ResourceLocation.parse(string.substring(1))));
+            return IngredientSelector.matchingTag(TagKey.create(Registries.ITEM, ResourceLocation.tryParse(string.substring(1))));
 
         var isStrict = string.endsWith("!");
         if (isStrict) string = string.substring(0, string.length() - 1);
 
-        var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(string));
+        var item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(string));
         if (item == Items.AIR) throw new RecipeModifierParsingException("Invalid item: " + string);
         return isStrict ? IngredientSelector.matchingItem(item) : IngredientSelector.byItem(item);
     }
@@ -55,15 +55,15 @@ public abstract class IngredientSelectorSerializer {
     static {
         registerSerializer("all", json -> IngredientSelector.ALL_INGREDIENTS);
         registerSerializer("match_item", json -> {
-            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString()));
+            var item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(json.get("item").getAsString()));
             return IngredientSelector.byItem(item);
         });
         registerSerializer("match_item_exact", json -> {
-            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString()));
+            var item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(json.get("item").getAsString()));
             return IngredientSelector.matchingItem(item);
         });
         registerSerializer("match_tag", json -> {
-            var tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(json.get("tag").getAsString()));
+            var tag = TagKey.create(Registries.ITEM, ResourceLocation.tryParse(json.get("tag").getAsString()));
             return IngredientSelector.matchingTag(tag);
         });
         registerSerializer("from_ordinals", json -> {

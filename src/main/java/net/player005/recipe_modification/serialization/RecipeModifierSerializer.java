@@ -3,7 +3,6 @@ package net.player005.recipe_modification.serialization;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.player005.recipe_modification.api.RecipeModifier;
@@ -28,7 +27,7 @@ public abstract class RecipeModifierSerializer {
 
     static {
         registerDeserializer("add_ingredient", object -> {
-            var ingredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("ingredient")).getOrThrow();
+            var ingredient = Ingredient.fromJson(object.get("ingredient"));
             return RecipeModifier.addIngredient(ingredient);
         });
 
@@ -39,25 +38,27 @@ public abstract class RecipeModifierSerializer {
 
         registerDeserializer("replace_ingredient", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredient"));
-            var newIngredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("new_ingredient")).getOrThrow();
+            var newIngredient = Ingredient.fromJson(object.get("new_ingredient"));
             return RecipeModifier.replaceIngredient(ingredientSelector, newIngredient);
         });
 
         registerDeserializer("add_alternative", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredients"));
-            var alternative = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("alternative")).getOrThrow();
+            var alternative = Ingredient.fromJson(object.get("alternative"));
             return RecipeModifier.addAlternative(ingredientSelector, alternative);
         });
 
         registerDeserializer("replace_result", object -> {
-            var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result")).getOrThrow();
+            var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result"))
+                    .getOrThrow(true, err -> {
+                        throw new RecipeModifierParsingException("Invalid new result: " + err);
+                    });
             return RecipeModifier.replaceResultItem(newResult);
         });
 
-        registerDeserializer("modify_result_components", object -> {
-            var patch = DataComponentPatch.CODEC.parse(JsonOps.INSTANCE, object.get("components")).getOrThrow();
-            return RecipeModifier.addResultComponents(patch);
-        });
+//        registerDeserializer("modify_result", object -> { TODO: result modifiers
+//            var function = LootItemFunctionType
+//        });
     }
 
     public static void registerDeserializer(String id, Function<JsonObject, RecipeModifier> deserializer) {

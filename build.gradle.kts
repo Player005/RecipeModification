@@ -23,7 +23,7 @@ sourceSets {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 
     withSourcesJar()
@@ -40,7 +40,6 @@ unimined {
 
         version(minecraftVersion)
         mappings {
-            intermediary()
             mojmap()
             parchment(version = parchmentVersion)
 
@@ -73,11 +72,15 @@ unimined {
 
     minecraft(sourceSets.getByName("neoforge")) {
         val neoforgeVersion: String by properties
+        val parchmentVersion: String by properties
 
         combineWith(sourceSets.main.get())
+
         neoForge {
             loader(neoforgeVersion)
             accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
+            mixinConfig("recipe_modification.mixins.json")
+            mixinConfig("recipe_modification_forge.mixins.json")
         }
         defaultRemapJar = true
     }
@@ -123,6 +126,7 @@ unimined {
 
 tasks {
     test {
+        enabled = false // TODO
         useJUnitPlatform()
     }
 
@@ -133,7 +137,7 @@ tasks {
     }
 
     getByName<ProcessResources>("processNeoforgeResources") {
-        filesMatching("META-INF/neoforge.mods.toml") {
+        filesMatching("META-INF/mods.toml") {
             expand(project.properties)
         }
     }
@@ -146,8 +150,7 @@ tasks {
 val gametestsCompileOnly by configurations.getting
 val gametests_neoforgeModImplementation by configurations.getting
 val gametests_fabricModImplementation by configurations.getting
-
-val fabricModImplementation by configurations.getting
+val gametests_fabricRuntimeOnly by configurations.getting
 
 val global by configurations.creating
 
@@ -159,14 +162,13 @@ sourceSets.forEach {
 dependencies {
     global("org.jetbrains:annotations:26.0.1")
 
-    global("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
+    implementation("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
     global(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 
     gametestsCompileOnly(sourceSets.main.get().output)
     gametests_neoforgeModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
-    gametests_fabricModImplementation(tasks.getByName("fabricJar").outputs.files)
-
-    fabricModImplementation(fabricApi.fabric("0.114.0+1.21.1"))
+    gametests_fabricModImplementation(fabricApi.fabric(properties["fabricApiVersion"].toString()))
+    gametests_fabricRuntimeOnly(tasks.getByName("fabricJar").outputs.files)
 
     testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
 }

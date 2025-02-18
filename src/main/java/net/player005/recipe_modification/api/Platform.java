@@ -1,15 +1,17 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 
 public interface Platform {
 
-    HolderLookup.Provider getRegistryAccess(RecipeManager recipeManager);
+    RegistryAccess getRegistryAccess();
 
-    RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id);
+    Recipe<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id);
 
     RecipeHelper getHelper();
+
+    void removeRecipe(ResourceLocation id);
 }

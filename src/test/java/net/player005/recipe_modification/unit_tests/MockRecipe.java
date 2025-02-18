@@ -1,21 +1,26 @@
 package net.player005.recipe_modification.unit_tests;
 
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public record MockRecipe(ItemStack result, Ingredient... ingredients) implements Recipe<CraftingInput> {
+public record MockRecipe(ResourceLocation id, ItemStack result, Ingredient... ingredients) implements Recipe<Container> {
     @Override
-    public boolean matches(CraftingInput input, Level level) {
+    public boolean matches(Container input, Level level) {
         return false;
     }
 
     @Override
-    public @NotNull ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+    public @NotNull ItemStack assemble(Container container, RegistryAccess registryAccess) {
         return result;
     }
 
@@ -25,7 +30,7 @@ public record MockRecipe(ItemStack result, Ingredient... ingredients) implements
     }
 
     @Override
-    public @NotNull ItemStack getResultItem(HolderLookup.Provider registries) {
+    public @NotNull ItemStack getResultItem(RegistryAccess registryAccess) {
         return result;
     }
 
@@ -43,5 +48,10 @@ public record MockRecipe(ItemStack result, Ingredient... ingredients) implements
     @Override
     public @NotNull NonNullList<Ingredient> getIngredients() {
         return NonNullList.of(Ingredient.EMPTY, ingredients);
+    }
+
+    @Override
+    public @NotNull ResourceLocation getId() {
+        return id;
     }
 }

@@ -7,7 +7,9 @@ import net.player005.recipe_modification.impl.IngredientAccessor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.function.Predicate;
 
@@ -15,12 +17,13 @@ import java.util.function.Predicate;
 @Mixin(Ingredient.class)
 public abstract class IngredientMixin implements Predicate<ItemStack>, IngredientAccessor {
 
-    @Shadow private Ingredient.Value[] values;
+    @Shadow @Mutable private Ingredient.Value[] values;
 
     @Shadow @Nullable private ItemStack[] itemStacks;
 
     @Shadow @Nullable private IntList stackingIds;
 
+    @Unique
     @Override
     public void replaceValues(Ingredient.Value[] values) {
         this.values = values;
@@ -30,11 +33,13 @@ public abstract class IngredientMixin implements Predicate<ItemStack>, Ingredien
         this.stackingIds = null;
     }
 
+    @Unique
     @Override
     public Ingredient.Value[] getValues() {
         return values;
     }
 
+    @Unique
     @Override
     public void removeValue(Ingredient.Value value) {
         replaceValues(ArrayUtils.removeElement(values, value));

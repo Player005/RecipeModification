@@ -3,7 +3,8 @@
   "modifiers": {
     "type": "replace_result",
     "new_result": {
-      "id": "minecraft:gold_block"
+      "id": "minecraft:gold_block",
+      "Count": 1
     }
   }
 }

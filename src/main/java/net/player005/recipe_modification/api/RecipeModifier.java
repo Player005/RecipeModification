@@ -1,6 +1,5 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -98,11 +97,9 @@ public interface RecipeModifier {
         return modifyResultItem(stack -> newResult);
     }
 
-    static RecipeModifier addResultComponents(DataComponentPatch patch) {
-        return modifyResultItem(stack -> {
-            stack.applyComponents(patch);
-            return stack;
-        });
-    }
+//    LootContext EMPTY_LOOT_CONTEXT = new LootContext.Builder(new LootParams.Builder(null).create(LootContextParamSets.EMPTY)).create(ResourceLocation.tryParse("recipe_modification:empty"));
+//    static RecipeModifier modifyResultItem(LootItemFunction function) {
+//        return modifyResultItem(stack -> function.apply(stack, EMPTY_LOOT_CONTEXT));
+//    } TODO
 
 }

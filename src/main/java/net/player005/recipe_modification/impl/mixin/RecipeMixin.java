@@ -1,6 +1,6 @@
 package net.player005.recipe_modification.impl.mixin;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.player005.recipe_modification.api.RecipeModification;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class RecipeMixin {
 
     @Inject(method = "getResultItem", at = @At("RETURN"), cancellable = true)
-    public void getResultItem(HolderLookup.Provider registries, CallbackInfoReturnable<ItemStack> cir) {
+    public void getResultItem(RegistryAccess registryAccess, CallbackInfoReturnable<ItemStack> cir) {
         cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), null));
     }
 

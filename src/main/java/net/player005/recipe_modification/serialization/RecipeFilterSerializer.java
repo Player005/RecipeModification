@@ -11,6 +11,8 @@ import net.player005.recipe_modification.api.RecipeFilter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class RecipeFilterSerializer {
@@ -32,27 +34,43 @@ public abstract class RecipeFilterSerializer {
     }
 
     private static RecipeFilter fromString(String string) {
-        return RecipeFilter.idEquals(ResourceLocation.parse(string));
+        return RecipeFilter.idEquals(Objects.requireNonNull(ResourceLocation.tryParse(string)));
     }
 
     static {
         registerSerializer("all_recipes", (json) -> RecipeFilter.ALWAYS_APPLY);
         registerSerializer("accepting_ingredient", (json) -> {
-            var item = ItemStack.CODEC.parse(JsonOps.INSTANCE, json.get("item")).getOrThrow();
+            var item = getItemStack(json.get("item"), err -> {
+                throw new RecipeModifierParsingException("Invalid recipe filter: " + err);
+            });
             return RecipeFilter.acceptsIngredient(item);
         });
         registerSerializer("result_item_is", (json) -> {
-            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString()));
+            var item = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(json.get("item").getAsString()));
             return RecipeFilter.resultItemIs(item);
         });
         registerSerializer("id_equals", (json) -> {
-            var id = ResourceLocation.parse(json.get("id").getAsString());
+            var id = ResourceLocation.tryParse(json.get("id").getAsString());
+            if (id == null)
+                throw new RecipeModifierParsingException("Invalid recipe filter: Invalid id: \"" + json.get("id") + "\"");
             return RecipeFilter.idEquals(id);
         });
         registerSerializer("namespace_equals", (json) -> {
             var namespace = json.get("namespace").getAsString();
             return RecipeFilter.namespaceEquals(namespace);
         });
+    }
+
+    private static ItemStack getItemStack(JsonElement json, Consumer<String> onError) {
+        if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isString())
+            return BuiltInRegistries.ITEM.get(getResourceLocation(json, onError)).getDefaultInstance();
+        if (json instanceof JsonObject object && !object.has("Count"))
+            return BuiltInRegistries.ITEM.get(getResourceLocation(object.get("id"), onError)).getDefaultInstance();
+        return ItemStack.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(true, onError);
+    }
+
+    private static ResourceLocation getResourceLocation(JsonElement json, Consumer<String> onError) {
+        return ResourceLocation.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(true, onError);
     }
 
     public static void registerSerializer(String name, Function<JsonObject, RecipeFilter> deserializer) {

@@ -2,14 +2,12 @@ package net.player005.recipe_modification.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -28,26 +25,26 @@ import java.util.function.Consumer;
  *
  * @see #registerModifier(RecipeModifierHolder)
  * @see #registerModifier(ResourceLocation, RecipeFilter, RecipeModifier...)
- * @see #removeRecipe(RecipeHolder)
+ * @see #removeRecipe(ResourceLocation)
  * @see #forAllRecipes(Consumer)
  * @see #onRecipeInit(Consumer)
  */
 public abstract class RecipeModification {
 
     public static final String modID = "recipe_modification";
-    static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecipeModification.class);
     @SuppressWarnings("NotNullFieldNotInitialized")
     private static Platform platform;
 
-    private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
-    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
+    private static final List<Consumer<RecipeManager>> recipeManagerCallbacks = Lists.newArrayList();
+    private static final Multimap<RecipeFilter, Consumer<Recipe<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
 
-    private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
-    private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
+    private static final List<ResourceLocation> toRemove = Lists.newArrayList();
+    private static final List<RecipeModifierHolder> modifiers = Lists.newArrayList();
     private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
     public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers = ArrayListMultimap.create();
 
-    private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
+    private static @UnknownNullability ImmutableMultimap<Item, Recipe<?>> recipesByResult;
 
     private static @UnknownNullability RecipeManager recipeManager;
 
@@ -71,7 +68,7 @@ public abstract class RecipeModification {
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer, RecipeFilter filter) {
+    public static void forAllRecipes(Consumer<Recipe<?>> recipeConsumer, RecipeFilter filter) {
         if (isInitialised())
             CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
         else recipeIterationCallbacks.put(filter, recipeConsumer);
@@ -84,7 +81,7 @@ public abstract class RecipeModification {
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer) {
+    public static void forAllRecipes(Consumer<Recipe<?>> recipeConsumer) {
         forAllRecipes(recipeConsumer, RecipeFilter.ALWAYS_APPLY);
     }
 
@@ -93,30 +90,7 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe), resultModifiers.size());
-    }
-
-    /**
-     * Finds the ResourceLocation of the given recipe. Try to avoid this method if possible,
-     * as it will iterate through all recipes every time it is called.
-     */
-    public static ResourceLocation findRecipeID(Recipe<?> recipe) {
-        AtomicReference<ResourceLocation> found = new AtomicReference<>();
-        forAllRecipes(recipeHolder -> {
-            if (recipeHolder.value().equals(recipe)) {
-                found.set(recipeHolder.id());
-            }
-        });
-        return found.get();
-    }
-
-    /**
-     * Removes the given recipe from the game
-     *
-     * @param recipeHolder The recipe to remove
-     */
-    public static void removeRecipe(RecipeHolder<?> recipeHolder) {
-        toRemove.add(recipeHolder.id());
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", recipe.getId(), resultModifiers.size());
     }
 
     /**
@@ -158,7 +132,7 @@ public abstract class RecipeModification {
      *
      * @throws IllegalStateException if the recipe manager isn't initialised yet (see {@link #getRecipeManager()})
      */
-    public static RecipeHolder<?> getByID(ResourceLocation id) {
+    public static Recipe<?> getByID(ResourceLocation id) {
         checkInitialised("get recipe by ID");
         return getPlatform().getRecipeByID(recipeManager, id);
     }
@@ -185,14 +159,8 @@ public abstract class RecipeModification {
         return recipeManager;
     }
 
-    /**
-     * Returns the {@link RecipeManager}s registry access (a {@link HolderLookup.Provider})
-     *
-     * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
-     */
-    public static HolderLookup.Provider getRegistryAccess() {
-        checkInitialised("get the RecipeManager's registry access");
-        return getPlatform().getRegistryAccess(getRecipeManager());
+    public static RegistryAccess getRegistryAccess() {
+        return getPlatform().getRegistryAccess();
     }
 
     /**
@@ -203,7 +171,7 @@ public abstract class RecipeModification {
      * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      * @see #getRecipesByResult(Item)
      */
-    public static ImmutableMultimap<Item, RecipeHolder<?>> getRecipesByResult() {
+    public static ImmutableMultimap<Item, Recipe<?>> getRecipesByResult() {
         checkInitialised("get recipes by result map");
         return recipesByResult;
     }
@@ -216,7 +184,7 @@ public abstract class RecipeModification {
      * @throws IllegalStateException if called before initialisation (see {@link #getRecipeManager()} docs)
      * @see #getRecipesByResult()
      */
-    public static ImmutableCollection<RecipeHolder<?>> getRecipesByResult(Item resultItem) {
+    public static ImmutableCollection<Recipe<?>> getRecipesByResult(Item resultItem) {
         checkInitialised("get recipe by result");
         return recipesByResult.get(resultItem);
     }
@@ -239,7 +207,7 @@ public abstract class RecipeModification {
     }
 
     @ApiStatus.Internal
-    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable RecipeInput recipeInput) {
+    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable Container recipeInput) {
         var i = 0;
         for (var entry : resultModifiers.entries()) {
             if (entry.getKey() != recipe) continue;
@@ -254,8 +222,10 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static void onRecipeManagerLoad(RecipeManager recipeManager) {
         RecipeModification.recipeManager = recipeManager;
-        if (modifiersFromDatapack == null)
-            throw new IllegalStateException("Recipes were loaded before recipe modifiers from datapacks");
+        if (modifiersFromDatapack == null) {
+            logger.error("Recipes loaded before recipe modifiers - recipe modifiers won't be applied");
+            return; // TODO: consider hard crash instead off error
+        }
         applyModifications();
     }
 
@@ -267,16 +237,16 @@ public abstract class RecipeModification {
     /**
      * Internal method that should be called on every datapack reload.
      * Initialises all registered {@link RecipeModifierHolder}s, calls all {@link #onRecipeInit(Consumer)}
-     * callbacks and removes recipes registered for removal using {@link #removeRecipe(RecipeHolder)}
+     * callbacks and removes recipes registered for removal using {@link #removeRecipe(ResourceLocation)}
      */
     @ApiStatus.Internal
     private static void applyModifications() {
         var timer = Stopwatch.createStarted();
 
-        var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
-        for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
-            var result = recipeHolder.value().getResultItem(getRegistryAccess());
-            byResultBuilder.put(result.getItem(), recipeHolder);
+        var byResultBuilder = ImmutableMultimap.<Item, Recipe<?>>builder();
+        for (Recipe<?> recipe : recipeManager.getRecipes()) {
+            var result = tryGetResult(recipe, getRegistryAccess());
+            byResultBuilder.put(result.getItem(), recipe);
         }
 
         recipesByResult = byResultBuilder.build();
@@ -294,36 +264,44 @@ public abstract class RecipeModification {
         logger.info("Found {} recipe modifiers in datapacks, {} total",
                 modifiersFromDatapack.size(), getAllModifiers().size());
 
-        for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
+        for (Recipe<?> recipe : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
 
             for (final var entry : recipeIterationCallbacks.entries()) {
-                if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
+                if (entry.getKey().shouldApply(recipe, registryAccess)) entry.getValue().accept(recipe);
             }
 
             // apply recipeModifiers
             var appliedOnRecipe = 0;
             for (RecipeModifierHolder modifier : getAllModifiers()) {
-                if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
+                if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
                 RecipeHelper helper = getPlatform().getHelper();
-                modifier.apply(recipeHolder.value(), helper);
+                modifier.apply(recipe, helper);
                 appliedOnRecipe++;
             }
 
             if (appliedOnRecipe > 0)
-                logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
+                logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipe.getId());
 
 
             for (ResourceLocation id : toRemove) {
-                if (recipeHolder.id().equals(id)) {
-                    // remove recipe from both maps stored in RecipeManager
-                    recipeManager.getRecipes().remove(recipeHolder); // remove from RecipeManager#byName
-                    recipeManager.getOrderedRecipes().remove(recipeHolder); // remove from RecipeManager#byType
+                if (recipe.getId().equals(id)) {
+                    platform.removeRecipe(recipe.getId());
                 }
             }
             modified += appliedOnRecipe;
         }
         logger.info("Modified {} recipes in {}", modified, timer);
         recipeIterationCallbacks.clear();
+    }
+
+    public static ItemStack tryGetResult(Recipe<?> recipe, RegistryAccess registryAccess) {
+        try {
+            return recipe.getResultItem(registryAccess);
+        } catch (Exception exception) {
+            logger.warn("Failed to get result for recipe {}", recipe.getId());
+            logger.debug("Exception querying result:", exception);
+            return ItemStack.EMPTY;
+        }
     }
 }
