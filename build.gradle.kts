@@ -157,7 +157,7 @@ sourceSets.forEach {
 }
 
 dependencies {
-    global("org.jetbrains:annotations:26.0.1")
+    global("org.jetbrains:annotations:26.0.2")
 
     global("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
     global(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
