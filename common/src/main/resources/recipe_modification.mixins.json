@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.player005.recipe_modification.impl.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "IngredientMixin",
+    "ItemValueAccessor",
+    "RecipeManagerAccessor",
+    "RecipeManagerMixin",
+    "RecipeMixin",
+    "RecipeMixin2",
+    "ReloadableServerResourcesMixin",
+    "TagValueAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "target_recipes": {
+    "type": "all_recipes"
+  },
+  "modifiers": [
+    {
+      "type": "replace_ingredient",
+      "ingredient": "oak_planks",
+      "new_ingredient": {
+        "item": "minecraft:netherite_ingot"
+      }
+    }
+  ]
+}

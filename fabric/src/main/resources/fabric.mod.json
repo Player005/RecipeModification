@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${name}",
+  "entrypoints": {
+    "main": [
+      "net.player005.recipe_modification.fabric.ModFabric"
+    ]
+  },
+  "description": "${description}",
+  "license": "${mod_license}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "mixins": [
+    "recipe_modification.mixins.json",
+    "recipe_modification_fabric.mixins.json"
+  ]
+}

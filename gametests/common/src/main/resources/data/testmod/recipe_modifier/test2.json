@@ -1,0 +1,17 @@
+{
+  "target_recipes": {
+    "type": "accepting_ingredient",
+    "item": {
+      "id": "minecraft:stone"
+    }
+  },
+  "modifiers": [
+    {
+      "type": "add_alternative",
+      "ingredients": "minecraft:stone",
+      "alternative": {
+        "item": "minecraft:dirt"
+      }
+    }
+  ]
+}

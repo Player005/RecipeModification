@@ -1,0 +1,24 @@
+modLoader = "javafml"
+loaderVersion = "*"
+
+license = "${mod_license}"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+
+logoFile = "icon.png"
+description = '''${mod_description}'''
+
+[[dependencies]]
+modId = "minecraft"
+versionRange = ""
+side = "BOTH"
+
+# Specify additional dependencies like this:
+#[[dependencies.${mod_id}]]
+#modId = "my_dependency_mod"
+#mandatory = true # if the dependency is required or optional
+#versionRange = "[min_version,max_version)" # maven version range of the dependency
+#side = "BOTH" # required on both client and server
