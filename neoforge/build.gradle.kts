@@ -76,4 +76,13 @@ tasks {
             expand(rootProject.properties)
         }
     }
+
+
+    processResources {
+        doFirst {
+            if (inputs.properties.containsKey("isRelease")) {
+                exclude("*/testing/*")
+            }
+        }
+    }
 }

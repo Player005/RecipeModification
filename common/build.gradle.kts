@@ -42,4 +42,12 @@ tasks {
         enabled = false
         useJUnitPlatform()
     }
+
+    processResources {
+        doFirst {
+            if (inputs.properties.containsKey("isRelease")) {
+                exclude("*/testing/*")
+            }
+        }
+    }
 }

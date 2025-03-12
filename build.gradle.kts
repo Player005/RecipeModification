@@ -1,3 +1,5 @@
+import org.gradle.api.internal.provider.DefaultProvider
+
 plugins {
     id("java")
     id("idea")
@@ -75,9 +77,12 @@ subprojects {
     group = properties["mod_group"].toString()
 
     base {
-        // format artifact names as [mod_id]-[loader]-[mc_version]-[mod_version].jar
-        archivesName =
-            "${rootProject.properties["mod_id"]}-${project.name}-${rootProject.properties["minecraft_version"]}"
+        // format artifact names as <mod_id>-<loader>-<mc_version>-[TESTING]-<mod_version>.jar
+        archivesName.set(DefaultProvider {
+            val isTesting = !(project(":common").tasks.processResources.get().inputs.properties.containsKey("isRelease"))
+            "${rootProject.properties["mod_id"]}-${project.name}-${rootProject.properties["minecraft_version"]}" +
+                    if (isTesting) "-TESTING" else ""
+        })
     }
 
     dependencies {
@@ -85,6 +90,22 @@ subprojects {
     }
 }
 
-tasks.jar {
-    enabled = false
+tasks {
+    jar {
+        enabled = false
+    }
+
+    create("buildRelease") {
+        group = "build"
+        description = "Builds the mod for release"
+
+        finalizedBy(":fabric:build")
+        finalizedBy(":neoforge:build")
+
+        doFirst {
+            project(":fabric").tasks.processResources.get().inputs.property("isRelease", true)
+            project(":neoforge").tasks.processResources.get().inputs.property("isRelease", true)
+            project(":common").tasks.processResources.get().inputs.property("isRelease", true)
+        }
+    }
 }
