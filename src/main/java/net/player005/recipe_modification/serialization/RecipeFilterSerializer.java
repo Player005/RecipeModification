@@ -53,6 +53,24 @@ public abstract class RecipeFilterSerializer {
             var namespace = json.get("namespace").getAsString();
             return RecipeFilter.namespaceEquals(namespace);
         });
+        registerSerializer("and", (json) -> {
+            var jsonFilters = json.getAsJsonArray("filters");
+            var filters = new ArrayList<>();
+            for (var filter : jsonFilters)
+                filters.add(fromJson(filter));
+            return RecipeFilter.and(filters.toArray(RecipeFilter[]::new));
+        });
+        registerSerializer("or", (json) -> {
+            var jsonFilters = json.getAsJsonArray("filters");
+            var filters = new ArrayList<>();
+            for (var filter : jsonFilters)
+                filters.add(fromJson(filter));
+            return RecipeFilter.or(filters.toArray(RecipeFilter[]::new));
+        });
+        registerSerializer("not", (json) -> {
+            var filter = fromJson(json.get("filter"));
+            return RecipeFilter.not(filter);
+        });
     }
 
     public static void registerSerializer(String name, Function<JsonObject, RecipeFilter> deserializer) {
