@@ -49,7 +49,7 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.addAlternative(ingredientSelector, alternative);
         });
 
-        registerDeserializer("replace_result", object -> {
+        registerDeserializer("replace_result_item", object -> {
             var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result")).getOrThrow();
             return RecipeModifier.replaceResultItem(newResult);
         });
