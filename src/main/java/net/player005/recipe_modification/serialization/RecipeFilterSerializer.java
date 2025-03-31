@@ -9,11 +9,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.player005.recipe_modification.api.RecipeFilter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 public abstract class RecipeFilterSerializer {
+
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
 
     public static RecipeFilter fromJson(JsonElement json) {
@@ -32,6 +34,14 @@ public abstract class RecipeFilterSerializer {
     }
 
     private static RecipeFilter fromString(String string) {
+        if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
+        if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
+        if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
+        var rl = ResourceLocation.tryParse(string);
+        if (rl == null)
+            throw new RecipeModifierParsingException("Invalid resource location in shorthand recipe filter: " + string);
+        if (BuiltInRegistries.ITEM.containsKey(rl))
+            return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl));
         return RecipeFilter.idEquals(ResourceLocation.parse(string));
     }
 
