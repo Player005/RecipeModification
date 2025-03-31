@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public abstract class IngredientSelectorSerializer {
+
     private static final Map<String, Function<JsonObject, IngredientSelector>> deserializers = new HashMap<>();
 
     public static IngredientSelector fromJson(JsonElement json) {
@@ -34,15 +35,17 @@ public abstract class IngredientSelectorSerializer {
         if (json instanceof JsonObject object) {
             var deserializer = deserializers.get(object.get("type").getAsString());
             if (deserializer == null) throw new RecipeModifierParsingException("Invalid ingredient selector: " +
-                    "unknown selector type " + object.get("type").getAsString());
+                "unknown selector type " + object.get("type").getAsString());
             return deserializer.apply(object);
         }
         throw new RecipeModifierParsingException("Invalid ingredient selector");
     }
 
     private static IngredientSelector fromString(String string) {
+        if (string.equals("*")) return IngredientSelector.ALL_INGREDIENTS;
         if (string.startsWith("#"))
-            return IngredientSelector.matchingTag(TagKey.create(Registries.ITEM, ResourceLocation.parse(string.substring(1))));
+            return IngredientSelector.matchingTag(TagKey.create(Registries.ITEM,
+                ResourceLocation.parse(string.substring(1))));
 
         var isStrict = string.endsWith("!");
         if (isStrict) string = string.substring(0, string.length() - 1);
