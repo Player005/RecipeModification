@@ -353,3 +353,45 @@ Example:
   "ordinals": 1
 }
 ```
+
+### Short-hand Syntax
+
+Again, there is a shorthand string syntax that you can use to
+define these selectors.
+
+To target all ingredients, use `*`.
+
+To match a certain item, just use the item id.
+
+For `match_item_exact` (i.e. excluding ingredients that allow for
+multiple alternative items), add a `!` after the item id.
+
+To match tag ingredients, use `#` followed by the tag name.
+
+To match an ingredient by its id/ordinal, just use the ordinal.
+
+Examples:
+
+```json5
+{
+  "ingredient": 0
+}
+```
+
+This would select the first ingredient of the recipe.
+
+```json5
+{
+  "ingredient": "*"
+}
+```
+
+This would select all ingredients of the recipe.
+
+```json5
+{
+  "ingredient": "minecraft:stone"
+}
+```
+
+This would select all stone ingredients of the recipe.
