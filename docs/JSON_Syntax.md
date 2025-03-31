@@ -204,7 +204,7 @@ Examples:
 }
 ```
 
-This would match all recipes that create stone (i.e. smelting
+This would match all recipes that create stone (e.g. smelting
 cobblestone in a furnace).
 
 ```json5
@@ -233,7 +233,7 @@ This modifier tries to add a given item as an additional required
 ingredient to the recipe.
 
 Note that this does not work with all kinds of recipes
-(i.e. furnace recipes only allow for 1 ingredient).
+(i.e. furnace recipes only allow for exactly 1 ingredient).
 
 Example:
 
@@ -248,15 +248,16 @@ Example:
 
 ### "remove_ingredient"
 
-This modifier tries to removes selected ingredients from the recipe.
+This modifier tries to remove selected ingredients from the recipe.
+
+Note that this does not work with all kinds of recipes.
 
 Example:
 
 ```json5
 {
   "type": "remove_ingredient",
-  "ingredients": "minecraft:stone"
-  // ingredient selector
+  "ingredients": "minecraft:stone" // ingredient selector
 }
 ```
 
@@ -271,8 +272,7 @@ Example:
 ```json5
 {
   "type": "replace_ingredient",
-  "ingredient": "minecraft:stone",
-  // ingredient selector
+  "ingredient": "minecraft:stone", // ingredient selector
   "new_ingredient": {
     "id": "minecraft:dirt"
   }
@@ -292,8 +292,7 @@ Example:
 ```json5
 {
   "type": "add_alternative",
-  "ingredient": "minecraft:stone",
-  // ingredient selector
+  "ingredient": "minecraft:stone", // ingredient selector
   "alternative": {
     "id": "minecraft:dirt"
   }
@@ -301,7 +300,8 @@ Example:
 ```
 
 This would add dirt as an alternative to stone for selected
-recipes, i.e. now either dirt or stone could be used.
+recipes, i.e. now either dirt or stone could be used to
+craft the item.
 
 ### "replace_result_item"
 
@@ -375,9 +375,9 @@ Example:
 
 ### "match_item_exact"
 
-This selector selects all ingredients that match the given item
-exactly, i.e. it will not match tag ingredients that contain the
-item.
+This selector selects all ingredients that ***only*** match the
+given item, i.e. it will not match tag ingredients that contain
+the item or ingredients with multiple alternative items.
 
 Example:
 
