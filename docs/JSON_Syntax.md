@@ -1,5 +1,14 @@
 # Defining Recipe Modifiers
 
+## Contents
+
+- [General Syntax](#general-syntax)
+- [Recipe Filter Syntax](#recipe-filter-syntax)
+    - [short-hand-syntax](#short-hand-syntax)
+- [Recipe Modifier Syntax](#recipe-modifier-syntax)
+- [Ingredient Selector Syntax](#ingredient-selector-syntax)
+    - [short-hand-syntax](#short-hand-syntax-1)
+
 ## General Syntax
 Recipe Modifiers can be defined in a datapack as json files in the
 `recipe_modifiers` namespace, for example:
