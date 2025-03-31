@@ -10,11 +10,13 @@
     - [short-hand-syntax](#short-hand-syntax-1)
 
 ## General Syntax
+
 Recipe Modifiers can be defined in a datapack as json files in the
 `recipe_modifiers` namespace, for example:
 `data/my_mod/recipe_modifiers/my_recipe_modifier.json`
 
 The structure of them looks like this:
+
 ```json5
 {
   "target_recipes": {
@@ -32,6 +34,7 @@ Each recipe modifier must define which recipes it should target
 modifications that will be applied to the matching recipes.
 
 ## Recipe Filter Syntax
+
 A recipe filter takes the list of all available recipes and
 selects one or more recipes from them.
 
@@ -44,10 +47,12 @@ using `not`.
 Mods can also define custom recipe filters in java code.
 
 ### "all_recipes"
+
 This filter matches all recipes.
 It does not take any parameters.
 
 Example:
+
 ```json5
 {
   "type": "all_recipes"
@@ -55,10 +60,12 @@ Example:
 ```
 
 ### "accepting_ingredient"
+
 This filter takes one item as a parameter and matches all recipes
 that accept the given item as an ingredient.
 
 Example:
+
 ```json5
 {
   "type": "accepting_ingredient",
@@ -67,13 +74,16 @@ Example:
   }
 }
 ```
+
 This would match all recipes that take stone as an input.
 
 ### "result_item_is"
+
 This filter takes one item as a parameter and matches all recipes
 that can be used to create that item.
 
 Example:
+
 ```json5
 {
   "type": "result_item_is",
@@ -82,41 +92,50 @@ Example:
   }
 }
 ```
+
 This would match all recipes that create stone (i.e. smelting
 cobblestone in a furnace).
 
 ### "id_equals"
+
 This filter takes one resource location as a parameter and matches
 the recipe with that id.
 
 Example:
+
 ```json5
 {
   "type": "id_equals",
   "id": "minecraft:gold_ingot_from_gold_block"
 }
 ```
+
 This would only match the recipe that gives you gold ingots from a
 gold block.
 
 ### "namespace_equals"
+
 This filter takes one string as a parameter and matches all
 recipes with that namespace.
 
 Example:
+
 ```json5
 {
   "type": "namespace_equals",
   "namespace": "create"
 }
 ```
+
 This would match all recipes from the Create mod.
 
 ### "and" and "or"
+
 These filters take a list of recipe filters as parameters and
 chain them together.
 
 Example:
+
 ```json5
 {
   "type": "and",
@@ -134,13 +153,16 @@ Example:
   ]
 }
 ```
+
 This would match all recipes that take stone as an input that are
 added by minecraft.
 
 ### "not"
+
 This filter takes one recipe filter as a parameter and inverts it.
 
 Example:
+
 ```json5
 {
   "type": "not",
@@ -152,9 +174,11 @@ Example:
   }
 }
 ```
+
 This would match all recipes that do not take stone as an input.
 
 ### Short-Hand Syntax
+
 Instead of using the full recipe filter syntax as shown above,
 you can also use the shorthand syntax, which consists of a
 single string.
@@ -173,11 +197,13 @@ To target all recipes in a certain namespace, use the namespace
 To invert a shorthand filter, put `!` before the filter.
 
 Examples:
+
 ```json5
 {
   "filter": "minecraft:stone"
 }
 ```
+
 This would match all recipes that create stone (i.e. smelting
 cobblestone in a furnace).
 
@@ -186,8 +212,8 @@ cobblestone in a furnace).
   "filter": "!create"
 }
 ```
-This would match all recipes that are not from the Create mod.
 
+This would match all recipes that are not from the Create mod.
 
 ## Recipe Modifier Syntax
 
@@ -202,6 +228,7 @@ There are currently six types of recipe modifiers:
 Mods can also define custom recipe modifiers in java code.
 
 ### "add_ingredient"
+
 This modifier tries to add a given item as an additional required
 ingredient to the recipe.
 
@@ -209,6 +236,7 @@ Note that this does not work with all kinds of recipes
 (i.e. furnace recipes only allow for 1 ingredient).
 
 Example:
+
 ```json5
 {
   "type": "add_ingredient",
@@ -219,54 +247,68 @@ Example:
 ```
 
 ### "remove_ingredient"
+
 This modifier tries to removes selected ingredients from the recipe.
 
 Example:
+
 ```json5
 {
   "type": "remove_ingredient",
-  "ingredients": "minecraft:stone" // ingredient selector
+  "ingredients": "minecraft:stone"
+  // ingredient selector
 }
 ```
+
 This would remove all stone ingredients from the recipe.
 
 ### "replace_ingredient"
+
 This modifier replaces selected ingredients with a new one.
 
 Example:
+
 ```json5
 {
   "type": "replace_ingredient",
-  "ingredient": "minecraft:stone", // ingredient selector
+  "ingredient": "minecraft:stone",
+  // ingredient selector
   "new_ingredient": {
     "id": "minecraft:dirt"
   }
 }
 ```
+
 This would replace all stone ingredients with dirt.
 
 ### "add_alternative"
+
 This modifier adds an alternative to selected ingredients from
 the recipe (i.e. either the original or the new ingredient can be
 used).
 
 Example:
+
 ```json5
 {
   "type": "add_alternative",
-  "ingredient": "minecraft:stone", // ingredient selector
+  "ingredient": "minecraft:stone",
+  // ingredient selector
   "alternative": {
     "id": "minecraft:dirt"
   }
 }
 ```
+
 This would add dirt as an alternative to stone for selected
 recipes, i.e. now either dirt or stone could be used.
 
 ### "replace_result_item"
+
 This modifier replaces the result of the recipe with a new one.
 
 Example:
+
 ```json5
 {
   "type": "replace_result_item",
@@ -275,27 +317,30 @@ Example:
   }
 }
 ```
+
 This would replace the result of the recipe with dirt.
 
 ### "modify_result_components"
+
 This modifier allows you to set
 [data components](https://minecraft.wiki/w/Data_component_format)
 on the result item.
 
 Example:
+
 ```json5
 {
   "type": "modify_result_components",
   "components": {
-      // map of component IDs to component values
-      "item_name": {
-        "text": "New Name"
-      }
+    // map of component IDs to component values
+    "item_name": {
+      "text": "New Name"
+    }
   }
 }
 ```
-This would set the name of the result item to "New Name".
 
+This would set the name of the result item to "New Name".
 
 ## Ingredient Selector Syntax
 
@@ -309,13 +354,16 @@ or a full object syntax, with five different types of selectors:
 `from_ordinals`.
 
 ### "all"
+
 This selector selects all ingredients of the recipe.
 
 ### "match_item"
+
 This selector selects all ingredients that match the given item.
 This includes tag ingredients that contain the item.
 
 Example:
+
 ```json5
 {
   "type": "match_item",
@@ -326,11 +374,13 @@ Example:
 ```
 
 ### "match_item_exact"
+
 This selector selects all ingredients that match the given item
 exactly, i.e. it will not match tag ingredients that contain the
 item.
 
 Example:
+
 ```json5
 {
   "type": "match_item_exact",
@@ -341,9 +391,11 @@ Example:
 ```
 
 ### "match_tag"
+
 This selector selects all ingredients that match the given tag.
 
 Example:
+
 ```json5
 {
   "type": "match_tag",
@@ -352,10 +404,12 @@ Example:
 ```
 
 ### "from_ordinals"
+
 This selector selects all ingredients by their id/ordinal.
 It takes either a single int or a list of integers as a parameter.
 
 Example:
+
 ```json5
 {
   "type": "from_ordinals",
