@@ -27,7 +27,7 @@ public interface RecipeModifier {
     static RecipeModifier removeIngredients(IngredientSelector selector) {
         return (recipe, helper) -> {
             for (var ingredient : selector.selectIngredients(recipe, helper)) {
-                recipe.getIngredients().replaceAll(ingredient1 -> ingredient1.equals(ingredient) ? Ingredient.EMPTY : ingredient1);
+                recipe.getIngredients().remove(ingredient);
             }
         };
     }

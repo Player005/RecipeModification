@@ -5,13 +5,13 @@
       {
         "type": "accepting_ingredient",
         "item": {
-          "id": "minecraft:smooth_stone_slab"
+          "id": "minecraft:blaze_powder"
         }
       },
       {
         "type": "accepting_ingredient",
         "item": {
-          "id": "minecraft:stick"
+          "id": "minecraft:ender_pearl"
         }
       }
     ]
