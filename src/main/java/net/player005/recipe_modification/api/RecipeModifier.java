@@ -27,7 +27,7 @@ public interface RecipeModifier {
     static RecipeModifier removeIngredients(IngredientSelector selector) {
         return (recipe, helper) -> {
             for (var ingredient : selector.selectIngredients(recipe, helper)) {
-                recipe.getIngredients().remove(ingredient);
+                recipe.getIngredients().replaceAll(ingredient1 -> ingredient1.equals(ingredient) ? Ingredient.EMPTY : ingredient1);
             }
         };
     }
@@ -37,13 +37,6 @@ public interface RecipeModifier {
      */
     static RecipeModifier addIngredient(Ingredient ingredient) {
         return (recipe, helper) -> recipe.getIngredients().add(ingredient);
-    }
-
-    /**
-     * Removes the ingredient at the given index.
-     */
-    static RecipeModifier removeIngredient(int index) {
-        return (recipe, helper) -> recipe.getIngredients().remove(index);
     }
 
     /**
@@ -91,7 +84,9 @@ public interface RecipeModifier {
     }
 
     static RecipeModifier modifyResultItem(Function<ItemStack, ItemStack> modifier) {
-        return (recipe, helper) -> RecipeModification.registerRecipeResultModifier(recipe, (recipe1, result, recipeInput) -> modifier.apply(result));
+        return (recipe, helper) -> RecipeModification.registerRecipeResultModifier(recipe,
+            (recipe1, result, recipeInput) -> modifier.apply(result)
+        );
     }
 
     static RecipeModifier replaceResultItem(ItemStack newResult) {

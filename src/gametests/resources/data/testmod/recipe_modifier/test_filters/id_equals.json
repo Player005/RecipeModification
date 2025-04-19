@@ -1,0 +1,15 @@
+{
+  "target_recipes": {
+    "type": "id_equals",
+    "id": "minecraft:gold_ingot_from_gold_block"
+  },
+  "modifiers": [
+    {
+      "type": "add_alternative",
+      "ingredients": "minecraft:gold_block",
+      "alternative": {
+        "item": "minecraft:hay_block"
+      }
+    }
+  ]
+}

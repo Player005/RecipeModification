@@ -3,6 +3,7 @@ package net.player005.recipe_modification;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.player005.recipe_modification.api.RecipeModification;
+import net.player005.recipe_modification.impl.Platform_1_21;
 
 public class ModFabric implements ModInitializer {
     @Override

@@ -1,0 +1,16 @@
+{
+  "target_recipes": {
+    "type": "accepting_ingredient",
+    "item": {
+      "id": "minecraft:dandelion"
+    }
+  },
+  "modifiers": [
+    {
+      "type": "add_ingredient",
+      "ingredient": {
+        "item": "minecraft:stone"
+      }
+    }
+  ]
+}

@@ -15,10 +15,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNullByDefault;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @NotNullByDefault
 public class Platform_1_21 implements Platform {
+
     @Override
     public HolderLookup.Provider getRegistryAccess(RecipeManager recipeManager) {
         return ((RecipeManagerAccessor) recipeManager).getRegistries();
@@ -48,20 +50,22 @@ public class Platform_1_21 implements Platform {
 
         @Override
         public void addAlternative(Ingredient ingredient, Item... items) {
-            var newValues = ArrayUtils.addAll(getAccessor(ingredient).getValues(), (Ingredient.Value[]) items);
+            var ingredientValues = Arrays.stream(items)
+                .map(ItemStack::new).map(Ingredient.ItemValue::new).toArray(Ingredient.Value[]::new);
+            var newValues = ArrayUtils.addAll(getAccessor(ingredient).getValues(), ingredientValues);
             getAccessor(ingredient).replaceValues(newValues);
         }
 
         @Override
         public void addAlternative(Ingredient ingredient, TagKey<Item> itemTag) {
             replaceIngredientValues(ingredient, ArrayUtils.add(getAccessor(ingredient).getValues(),
-                    new Ingredient.TagValue(itemTag)));
+                new Ingredient.TagValue(itemTag)));
         }
 
         @Override
         public void addAlternative(Ingredient ingredient, Ingredient alternative) {
             replaceIngredientValues(ingredient, ArrayUtils.addAll(getAccessor(ingredient).getValues(),
-                    getAccessor(alternative).getValues()));
+                getAccessor(alternative).getValues()));
         }
 
         @Override

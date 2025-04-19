@@ -32,7 +32,7 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.addIngredient(ingredient);
         });
 
-        registerDeserializer("remove_ingredient", object -> {
+        registerDeserializer("remove_ingredients", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredients"));
             return RecipeModifier.removeIngredients(ingredientSelector);
         });

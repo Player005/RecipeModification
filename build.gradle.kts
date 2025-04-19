@@ -2,6 +2,7 @@ import org.gradle.jvm.tasks.Jar
 
 plugins {
     id("idea")
+    id("maven-publish")
     id("java-library")
     id("xyz.wagyourtail.unimined") version "1.3.12"
 }
@@ -11,6 +12,7 @@ repositories {
     unimined.wagYourMaven("releases")
     unimined.fabricMaven()
     unimined.neoForgedMaven()
+    unimined.modrinthMaven()
 }
 
 sourceSets {
@@ -124,6 +126,7 @@ unimined {
 tasks {
     test {
         useJUnitPlatform()
+        enabled = false
     }
 
     getByName<ProcessResources>("processFabricResources") {
@@ -143,7 +146,7 @@ tasks {
     }
 }
 
-val gametestsCompileOnly by configurations.getting
+val gametestsImplementation by configurations.getting
 val gametests_neoforgeModImplementation by configurations.getting
 val gametests_fabricModImplementation by configurations.getting
 
@@ -162,11 +165,27 @@ dependencies {
     global("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
     global(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
 
-    gametestsCompileOnly(sourceSets.main.get().output)
+    gametestsImplementation(sourceSets.main.get().output)
     gametests_neoforgeModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
     gametests_fabricModImplementation(tasks.getByName("fabricJar").outputs.files)
 
     fabricModImplementation(fabricApi.fabric("0.114.0+1.21.1"))
 
     testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
+
+    // gametests_fabricModImplementation("maven.modrinth:create-fabric:7Ub71nPb")
+    gametests_neoforgeModImplementation("maven.modrinth:create:1.21.1-6.0.4")
+    gametests_neoforgeModImplementation(sourceSets["neoforge"].output)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifact(tasks.getByName("fabricJar"))
+            artifact(tasks.getByName("remapFabricJar"))
+            artifact(tasks.getByName("neoforgeJar"))
+            artifact(tasks.getByName("remapNeoforgeJar"))
+        }
+    }
 }

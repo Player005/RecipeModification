@@ -40,7 +40,8 @@ public abstract class RecipeModification {
     private static Platform platform;
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
-    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
+    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks =
+        ArrayListMultimap.create();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
@@ -93,7 +94,8 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe), resultModifiers.size());
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe),
+            resultModifiers.size());
     }
 
     /**
@@ -235,11 +237,12 @@ public abstract class RecipeModification {
     private static void checkInitialised(String action) {
         if (!isInitialised())
             throw new IllegalStateException("Can't " + action + " before recipes are initialised." +
-                    "Maybe you need to use RecipeModification#onRecipeInit() ?");
+                "Maybe you need to use RecipeModification#onRecipeInit() ?");
     }
 
     @ApiStatus.Internal
-    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable RecipeInput recipeInput) {
+    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
+                                            @Nullable RecipeInput recipeInput) {
         var i = 0;
         for (var entry : resultModifiers.entries()) {
             if (entry.getKey() != recipe) continue;
@@ -292,7 +295,7 @@ public abstract class RecipeModification {
         var modified = 0;
 
         logger.info("Found {} recipe modifiers in datapacks, {} total",
-                modifiersFromDatapack.size(), getAllModifiers().size());
+            modifiersFromDatapack.size(), getAllModifiers().size());
 
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
@@ -306,7 +309,11 @@ public abstract class RecipeModification {
             for (RecipeModifierHolder modifier : getAllModifiers()) {
                 if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
                 RecipeHelper helper = getPlatform().getHelper();
-                modifier.apply(recipeHolder.value(), helper);
+                try {
+                    modifier.apply(recipeHolder.value(), helper);
+                } catch (Exception e) {
+                    logger.error("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipeHolder.id(), e);
+                }
                 appliedOnRecipe++;
             }
 

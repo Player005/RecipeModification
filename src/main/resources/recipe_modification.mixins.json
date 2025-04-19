@@ -5,10 +5,12 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "IngredientMixin",
+    "NonNullListMixin",
     "RecipeManagerAccessor",
     "RecipeMixin",
     "RecipeMixin2",
-    "ReloadableServerResourcesMixin"
+    "ReloadableServerResourcesMixin",
+    "ShapelessRecipeMixin"
   ],
   "client": [],
   "server": [],

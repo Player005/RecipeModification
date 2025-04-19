@@ -5,7 +5,7 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.player005.recipe_modification.api.IngredientSelector;
-import net.player005.recipe_modification.Platform_1_21;
+import net.player005.recipe_modification.impl.Platform_1_21;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
