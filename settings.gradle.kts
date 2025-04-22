@@ -15,3 +15,4 @@ plugins {
 }
 
 include("common", "fabric", "neoforge")
+rootProject.name = "RecipeModification"
