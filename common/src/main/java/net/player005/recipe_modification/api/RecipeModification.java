@@ -196,6 +196,16 @@ public abstract class RecipeModification {
         return fullList;
     }
 
+    public static ItemStack tryGetResult(Recipe<?> recipe, RegistryAccess registryAccess) {
+        try {
+            return recipe.getResultItem(registryAccess);
+        } catch (Exception exception) {
+            logger.warn("Failed to get result for recipe {}", recipe.getId());
+            logger.debug("Exception querying result:", exception);
+            return ItemStack.EMPTY;
+        }
+    }
+
     public static boolean isInitialised() {
         return recipeManager != null;
     }
@@ -208,14 +218,11 @@ public abstract class RecipeModification {
 
     @ApiStatus.Internal
     public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable Container recipeInput) {
-        var i = 0;
         for (var entry : resultModifiers.entries()) {
             if (entry.getKey() != recipe) continue;
             currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
-            i++;
         }
 
-        if (recipeInput != null && i > 0) logger.debug("Applied {} result item modifiers", i);
         return currentResult;
     }
 
@@ -243,13 +250,8 @@ public abstract class RecipeModification {
     private static void applyModifications() {
         var timer = Stopwatch.createStarted();
 
-        var byResultBuilder = ImmutableMultimap.<Item, Recipe<?>>builder();
-        for (Recipe<?> recipe : recipeManager.getRecipes()) {
-            var result = tryGetResult(recipe, getRegistryAccess());
-            byResultBuilder.put(result.getItem(), recipe);
-        }
+        recipesByResult = buildRecipeResultMap();
 
-        recipesByResult = byResultBuilder.build();
         logger.debug("Built recipe by result map for {} recipes in {}", recipeManager.getRecipes().size(), timer);
         timer.reset().start();
 
@@ -271,18 +273,10 @@ public abstract class RecipeModification {
                 if (entry.getKey().shouldApply(recipe, registryAccess)) entry.getValue().accept(recipe);
             }
 
-            // apply recipeModifiers
-            var appliedOnRecipe = 0;
-            for (RecipeModifierHolder modifier : getAllModifiers()) {
-                if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
-                RecipeHelper helper = getPlatform().getHelper();
-                modifier.apply(recipe, helper);
-                appliedOnRecipe++;
-            }
+            var appliedOnRecipe = applyAllModifiers(recipe, registryAccess);
 
             if (appliedOnRecipe > 0)
                 logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipe.getId());
-
 
             for (ResourceLocation id : toRemove) {
                 if (recipe.getId().equals(id)) {
@@ -291,17 +285,42 @@ public abstract class RecipeModification {
             }
             modified += appliedOnRecipe;
         }
+
         logger.info("Modified {} recipes in {}", modified, timer);
         recipeIterationCallbacks.clear();
     }
 
-    public static ItemStack tryGetResult(Recipe<?> recipe, RegistryAccess registryAccess) {
-        try {
-            return recipe.getResultItem(registryAccess);
-        } catch (Exception exception) {
-            logger.warn("Failed to get result for recipe {}", recipe.getId());
-            logger.debug("Exception querying result:", exception);
-            return ItemStack.EMPTY;
+    private static int applyAllModifiers(Recipe<?> recipe, RegistryAccess registryAccess) {
+        var appliedOnRecipe = 0;
+        for (RecipeModifierHolder modifier : getAllModifiers()) {
+            if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
+            try {
+                RecipeHelper helper = getPlatform().getHelper();
+                modifier.apply(recipe, helper);
+            } catch (Exception e) {
+                handleError(recipe, modifier, e);
+            }
+            appliedOnRecipe++;
+        }
+        return appliedOnRecipe;
+    }
+
+    private static ImmutableMultimap<Item, Recipe<?>> buildRecipeResultMap() {
+        var byResultBuilder = ImmutableMultimap.<Item, Recipe<?>>builder();
+        for (Recipe<?> recipe : recipeManager.getRecipes()) {
+            var result = tryGetResult(recipe, getRegistryAccess());
+            byResultBuilder.put(result.getItem(), recipe);
+        }
+
+        return byResultBuilder.build();
+    }
+
+    private static void handleError(Recipe<?> recipe, RecipeModifierHolder modifier, Exception e) {
+        if (platform.isDevelopmentEnvironment()) {
+            logger.error("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipe.getId(), e);
+        } else {
+            logger.warn("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipe.getId());
+            logger.debug("Exception:", e);
         }
     }
 }

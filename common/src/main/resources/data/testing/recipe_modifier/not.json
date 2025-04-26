@@ -1,0 +1,17 @@
+{
+  "target_recipes": {
+    "type": "not",
+    "filter": {
+      "type": "namespace_equals",
+      "namespace": "minecraft"
+    }
+  },
+  "modifiers": [
+    {
+      "type": "modify_result_components",
+      "components": {
+        "item_name": "{\"text\": \"New Name\"}"
+      }
+    }
+  ]
+}

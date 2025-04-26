@@ -6,11 +6,13 @@
   "mixins": [
     "IngredientMixin",
     "ItemValueAccessor",
+    "NonNullListMixin",
     "RecipeManagerAccessor",
     "RecipeManagerMixin",
     "RecipeMixin",
     "RecipeMixin2",
     "ReloadableServerResourcesMixin",
+    "ShapelessRecipeMixin",
     "TagValueAccessor"
   ],
   "injectors": {

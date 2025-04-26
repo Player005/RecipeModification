@@ -14,4 +14,6 @@ public interface Platform {
     RecipeHelper getHelper();
 
     void removeRecipe(ResourceLocation id);
+
+    boolean isDevelopmentEnvironment();
 }

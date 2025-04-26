@@ -1,0 +1,15 @@
+{
+  "target_recipes": {
+    "type": "namespace_equals",
+    "namespace": "testing"
+  },
+  "modifiers": [
+    {
+      "type": "replace_result_item",
+      "new_result": {
+        "Count": 1,
+        "id": "minecraft:mossy_cobblestone"
+      }
+    }
+  ]
+}

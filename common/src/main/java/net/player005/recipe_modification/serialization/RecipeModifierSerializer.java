@@ -31,7 +31,7 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.addIngredient(ingredient);
         });
 
-        registerDeserializer("remove_ingredient", object -> {
+        registerDeserializer("remove_ingredients", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredients"));
             return RecipeModifier.removeIngredients(ingredientSelector);
         });
@@ -48,7 +48,7 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.addAlternative(ingredientSelector, alternative);
         });
 
-        registerDeserializer("replace_result", object -> {
+        registerDeserializer("replace_result_item", object -> {
             var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result"))
                     .getOrThrow(true, err -> {
                         throw new RecipeModifierParsingException("Invalid new result: " + err);

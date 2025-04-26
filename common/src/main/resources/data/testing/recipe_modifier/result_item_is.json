@@ -1,0 +1,15 @@
+{
+  "target_recipes": {
+    "type": "result_item_is",
+    "item": "minecraft:stone"
+  },
+  "modifiers": [
+    {
+      "type": "replace_result_item",
+      "new_result": {
+        "Count": 1,
+        "id": "minecraft:cobblestone"
+      }
+    }
+  ]
+}

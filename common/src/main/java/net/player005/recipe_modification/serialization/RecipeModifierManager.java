@@ -40,7 +40,7 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener {
                         ModificationSetSerializer.fromJson(json.get("modifiers"))
                 ));
             } catch (Exception exception) {
-                LOGGER.error("Error loading recipe modifier {}:", id, exception);
+                LOGGER.error("Error loading recipe modifier {}", id, exception);
             }
         }
         var list = builder.build();

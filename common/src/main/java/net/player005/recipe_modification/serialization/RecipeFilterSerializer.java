@@ -59,6 +59,24 @@ public abstract class RecipeFilterSerializer {
             var namespace = json.get("namespace").getAsString();
             return RecipeFilter.namespaceEquals(namespace);
         });
+        registerSerializer("not", (json) -> {
+            var filter = fromJson(json.get("filter"));
+            return RecipeFilter.not(filter);
+        });
+        registerSerializer("and", (json) -> {
+            var filters = new RecipeFilter[json.get("filters").getAsJsonArray().size()];
+            for (int i = 0; i < filters.length; i++) {
+                filters[i] = fromJson(json.get("filters").getAsJsonArray().get(i));
+            }
+            return RecipeFilter.and(filters);
+        });
+        registerSerializer("or", (json) -> {
+            var filters = new RecipeFilter[json.get("filters").getAsJsonArray().size()];
+            for (int i = 0; i < filters.length; i++) {
+                filters[i] = fromJson(json.get("filters").getAsJsonArray().get(i));
+            }
+            return RecipeFilter.or(filters);
+        });
     }
 
     private static ItemStack getItemStack(JsonElement json, Consumer<String> onError) {
