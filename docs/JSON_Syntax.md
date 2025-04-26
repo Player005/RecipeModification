@@ -399,7 +399,7 @@ Example:
 ```json5
 {
   "type": "match_tag",
-  "tag": "#minecraft:planks"
+  "tag": "minecraft:planks"
 }
 ```
 
