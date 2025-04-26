@@ -87,9 +87,7 @@ Example:
 ```json5
 {
   "type": "result_item_is",
-  "item": {
-    "id": "minecraft:stone"
-  }
+  "item": "minecraft:stone"
 }
 ```
 
@@ -241,7 +239,7 @@ Example:
 {
   "type": "add_ingredient",
   "ingredient": {
-    "id": "minecraft:stone"
+    "item": "minecraft:stone"
   }
 }
 ```
@@ -274,12 +272,13 @@ Example:
   "type": "replace_ingredient",
   "ingredient": "minecraft:stone", // ingredient selector
   "new_ingredient": {
-    "id": "minecraft:dirt"
+    "item": "minecraft:dirt"
   }
 }
 ```
 
-This would replace all stone ingredients with dirt.
+This would replace all stone ingredients with dirt (i.e. now you 
+need to use dirt instead of stone to craft the item).
 
 ### "add_alternative"
 
@@ -294,7 +293,7 @@ Example:
   "type": "add_alternative",
   "ingredient": "minecraft:stone", // ingredient selector
   "alternative": {
-    "id": "minecraft:dirt"
+    "item": "minecraft:dirt"
   }
 }
 ```
@@ -313,34 +312,13 @@ Example:
 {
   "type": "replace_result_item",
   "new_result": {
+    "Count": 1,
     "id": "minecraft:dirt"
   }
 }
 ```
 
 This would replace the result of the recipe with dirt.
-
-### "modify_result_components"
-
-This modifier allows you to set
-[data components](https://minecraft.wiki/w/Data_component_format)
-on the result item.
-
-Example:
-
-```json5
-{
-  "type": "modify_result_components",
-  "components": {
-    // map of component IDs to component values
-    "item_name": {
-      "text": "New Name"
-    }
-  }
-}
-```
-
-This would set the name of the result item to "New Name".
 
 ## Ingredient Selector Syntax
 
@@ -384,9 +362,7 @@ Example:
 ```json5
 {
   "type": "match_item_exact",
-  "item": {
-    "id": "minecraft:stone"
-  }
+  "item": "minecraft:stone"
 }
 ```
 
@@ -399,7 +375,7 @@ Example:
 ```json5
 {
   "type": "match_tag",
-  "tag": "#minecraft:planks"
+  "tag": "minecraft:planks"
 }
 ```
 
@@ -413,9 +389,11 @@ Example:
 ```json5
 {
   "type": "from_ordinals",
-  "ordinals": 1
+  "ordinals": 0
 }
 ```
+
+This would select the first ingredient of the recipe.
 
 ### Short-hand Syntax
 
