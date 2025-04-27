@@ -27,7 +27,7 @@ minecraft {
 
     runs {
         create("client") {
-            workingDirectory(project.file("run"))
+            workingDirectory(rootProject.file("run/client/${rootProject.properties["minecraft_version"]}"))
             ideaModule("${rootProject.name}.${project.name}.main")
 
             mods {

@@ -31,14 +31,14 @@ loom {
         named("client") {
             client()
             configName = "Fabric Client"
-            ideConfigGenerated(true)
-            runDir("run")
+            runDir("../run/client/${properties["minecraft_version"]}")
+            ideConfigGenerated(false)
         }
         named("server") {
             server()
             configName = "Fabric Server"
-            ideConfigGenerated(true)
-            runDir("run")
+            runDir("../run/client/${properties["minecraft_version"]}")
+            ideConfigGenerated(false)
         }
     }
 
