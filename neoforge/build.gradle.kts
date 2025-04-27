@@ -1,3 +1,5 @@
+import net.neoforged.moddevgradle.dsl.RunModel
+
 plugins {
     id("net.neoforged.moddev") version "2.0.78"
 }
@@ -19,19 +21,15 @@ neoForge {
     }
 
     runs {
-        val vmArgs = arrayOf(
-            "-XX:+UseZGC",
-            "-XX:+IgnoreUnrecognizedVMOptions",
-            "-XX:+AllowEnhancedClassRedefinition",
-            "-Xms500M",
-            "-Xmx2G"
-        )
+        val vmArgs = arrayOf("-XX:+UseZGC", "-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xms500M", "-Xmx2G")
         create("Client") {
             client()
+            gameDirectory = rootDir.resolve("run/client/${properties["minecraft_version"]}")
             jvmArguments.addAll(*vmArgs)
         }
         create("Server") {
             server()
+            gameDirectory = rootDir.resolve("run/server/${properties["minecraft_version"]}")
             jvmArguments.addAll(*vmArgs)
         }
     }
