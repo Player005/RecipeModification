@@ -1,191 +1,90 @@
-import org.gradle.jvm.tasks.Jar
-
 plugins {
+    id("java")
     id("idea")
-    id("maven-publish")
-    id("java-library")
-    id("xyz.wagyourtail.unimined") version "1.3.12"
+    id("fabric-loom") version "1.10-SNAPSHOT" apply false
 }
 
-repositories {
-    mavenCentral()
-    unimined.wagYourMaven("releases")
-    unimined.fabricMaven()
-    unimined.neoForgedMaven()
-    unimined.modrinthMaven()
-}
+subprojects {
+    apply(plugin = "java-library")
+    apply(plugin = "idea")
+    apply(plugin = "maven-publish")
 
-sourceSets {
-    create("fabric")
-    create("neoforge")
-    create("gametests")
-    create("gametests_neoforge")
-    create("gametests_fabric")
-}
+    repositories {
+        mavenCentral()
+        mavenLocal()
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-
-    withSourcesJar()
-}
-
-group = properties["group"].toString()
-version = properties["version"].toString()
-base.archivesName = properties["modid"].toString()
-
-unimined {
-    minecraft { // main sourceset
-        val minecraftVersion: String by properties
-        val parchmentVersion: String by properties
-
-        version(minecraftVersion)
-        mappings {
-            intermediary()
-            mojmap()
-            parchment(version = parchmentVersion)
-
-            devFallbackNamespace("official")
+        // Add parchment and modrinth maven repositories for convenience
+        // filters are added so only relevant dependencies are queried from these repos
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Modrinth"
+                    url = uri("https://api.modrinth.com/maven")
+                }
+            }
+            filter {
+                includeGroup("maven.modrinth")
+            }
         }
 
-        accessWidener {
-            accessWidener("src/main/resources/recipe_modification.accesswidener")
-        }
-
-        if (!this.sourceSet.name.contains("fabric") && !this.sourceSet.name.contains("neoforge")) {
-            runs.off = true
-            defaultRemapJar = false
-            defaultRemapSourcesJar = false
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "Parchment"
+                    url = uri("https://maven.parchmentmc.org")
+                }
+            }
+            filter {
+                includeGroup("org.parchmentmc.data")
+            }
         }
     }
 
-    // -- modloaders --
-
-    minecraft(sourceSets.getByName("fabric")) {
-        val fabricVersion: String by properties
-
-        combineWith(sourceSets.main.get())
-        fabric {
-            loader(fabricVersion)
-            accessWidener("src/main/resources/recipe_modification.accesswidener")
-        }
-        defaultRemapJar = true
-    }
-
-    minecraft(sourceSets.getByName("neoforge")) {
-        val neoforgeVersion: String by properties
-
-        combineWith(sourceSets.main.get())
-        neoForge {
-            loader(neoforgeVersion)
-            accessTransformer(aw2at("src/main/resources/recipe_modification.accesswidener"))
-        }
-        defaultRemapJar = true
-    }
-
-    // -- tests --
-
-    minecraft(sourceSets.test.get()) { // unit tests (using fabric)
-        combineWith("fabric")
-    }
-
-    minecraft(sourceSets.getByName("gametests")) { // gametests (core)
-        val minecraftVersion: String by properties
-        val parchmentVersion: String by properties
-
-        version(minecraftVersion)
-        mappings {
-            intermediary()
-            mojmap()
-            parchment(version = parchmentVersion)
-
-            devFallbackNamespace("official")
+    // tell idea to download sources and javadocs when importing
+    idea {
+        module {
+            isDownloadSources = true
+            isDownloadJavadoc = true
         }
     }
 
-    minecraft(sourceSets.getByName("gametests_neoforge")) { // gametests (neoforge implementation)
-        val neoforgeVersion: String by properties
+    java.toolchain.languageVersion = JavaLanguageVersion.of(rootProject.properties["java_version"].toString())
 
-        combineWith("gametests")
-        neoForge {
-            loader(neoforgeVersion)
+    tasks {
+        withType<JavaCompile> {
+            options.encoding = "UTF-8"
+            options.release.set(rootProject.properties["java_version"].toString().toInt())
+        }
+        withType<GenerateModuleMetadata>().configureEach {
+            enabled = false
+        }
+
+        jar {
+            // put all built jars in the correct directory
+            destinationDirectory = rootDir.resolve("build").resolve("libs_${project.name}")
+
+            // add license file to jars
+            from(rootDir.resolve("LICENSE.md"))
+
+            // required because apparently some classes are duplicated
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
     }
 
-    minecraft(sourceSets.getByName("gametests_fabric")) { // gametests (fabric implementation)
-        val fabricVersion: String by properties
+    version = properties["mod_version"].toString()
+    group = properties["mod_group"].toString()
 
-        combineWith("gametests")
-        fabric {
-            loader(fabricVersion)
-        }
+    base {
+        // format artifact names as [mod_id]-[loader]-[mc_version]-[mod_version].jar
+        archivesName =
+            "${rootProject.properties["mod_id"]}-${project.name}-${rootProject.properties["minecraft_version"]}"
+    }
+
+    dependencies {
+        compileOnly("org.jetbrains:annotations:26.0.1")
     }
 }
 
-tasks {
-    test {
-        useJUnitPlatform()
-        enabled = false
-    }
-
-    getByName<ProcessResources>("processFabricResources") {
-        filesMatching("fabric.mod.json") {
-            expand(project.properties)
-        }
-    }
-
-    getByName<ProcessResources>("processNeoforgeResources") {
-        filesMatching("META-INF/neoforge.mods.toml") {
-            expand(project.properties)
-        }
-    }
-
-    getByName<Jar>("gametests_fabricJar") {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-}
-
-val gametestsImplementation by configurations.getting
-val gametests_neoforgeModImplementation by configurations.getting
-val gametests_fabricModImplementation by configurations.getting
-
-val fabricModImplementation by configurations.getting
-
-val global by configurations.creating
-
-sourceSets.forEach {
-    it.runtimeClasspath += global
-    it.compileClasspath += global
-}
-
-dependencies {
-    global("org.jetbrains:annotations:26.0.2")
-
-    global("net.fabricmc:sponge-mixin:0.15.5+mixin.0.8.7")
-    global(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")!!)
-
-    gametestsImplementation(sourceSets.main.get().output)
-    gametests_neoforgeModImplementation(tasks.getByName("remapNeoforgeJar").outputs.files)
-    gametests_fabricModImplementation(tasks.getByName("fabricJar").outputs.files)
-
-    fabricModImplementation(fabricApi.fabric("0.114.0+1.21.1"))
-
-    testImplementation("net.fabricmc:fabric-loader-junit:${properties["fabricVersion"]}")
-
-    // gametests_fabricModImplementation("maven.modrinth:create-fabric:7Ub71nPb")
-    gametests_neoforgeModImplementation("maven.modrinth:create:1.21.1-6.0.4")
-    gametests_neoforgeModImplementation(sourceSets["neoforge"].output)
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            artifact(tasks.getByName("fabricJar"))
-            artifact(tasks.getByName("remapFabricJar"))
-            artifact(tasks.getByName("neoforgeJar"))
-            artifact(tasks.getByName("remapNeoforgeJar"))
-        }
-    }
+tasks.jar {
+    enabled = false
 }

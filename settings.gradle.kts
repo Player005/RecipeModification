@@ -1,17 +1,15 @@
-rootProject.name = "RecipeModification"
+rootProject.name = "RecipeModification" // TODO: replace with your mod id
 
 pluginManagement {
     repositories {
-        maven("https://maven.wagyourtail.xyz/releases")
-        maven("https://maven.wagyourtail.xyz/snapshots")
-
-        mavenCentral()
-
-        gradlePluginPortal {
-            content {
-                // this is not required either, unless jcenter goes down again, then it might fix things
-                excludeGroup("org.apache.logging.log4j")
-            }
-        }
+        maven("https://maven.fabricmc.net/")
+        maven("https://maven.neoforged.net/releases")
+        gradlePluginPortal()
     }
 }
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+}
+
+include("common", "fabric", "neoforge")
