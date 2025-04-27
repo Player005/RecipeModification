@@ -5,6 +5,7 @@ import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLLoader;
 import net.player005.recipe_modification.api.RecipeModification;
 import net.player005.recipe_modification.impl.Platform_1_20_1;
 
@@ -14,7 +15,12 @@ public class ModNeoforge {
     public static final String modID = "recipe_modification";
 
     public ModNeoforge() {
-        RecipeModification.initPlatform(new Platform_1_20_1());
+        RecipeModification.initPlatform(new Platform_1_20_1() {
+            @Override
+            public boolean isDevelopmentEnvironment() {
+                return !FMLLoader.isProduction();
+            }
+        });
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
     }
 

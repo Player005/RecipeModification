@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @NotNullByDefault
-public class Platform_1_20_1 implements Platform {
+public abstract class Platform_1_20_1 implements Platform {
 
     @ApiStatus.Internal
     public static RegistryAccess.@UnknownNullability Frozen REGISTRY_ACCESS;
