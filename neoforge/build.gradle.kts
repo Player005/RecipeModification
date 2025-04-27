@@ -19,7 +19,13 @@ neoForge {
     }
 
     runs {
-        val vmArgs = arrayOf("-XX:+UseZGC", "-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xms500M", "-Xmx2G")
+        val vmArgs = arrayOf(
+            "-XX:+UseZGC",
+            "-XX:+IgnoreUnrecognizedVMOptions",
+            "-XX:+AllowEnhancedClassRedefinition",
+            "-Xms500M",
+            "-Xmx2G"
+        )
         create("Client") {
             client()
             jvmArguments.addAll(*vmArgs)
@@ -79,6 +85,12 @@ tasks {
         filesMatching("META-INF/neoforge.mods.toml") {
             @Suppress("UNCHECKED_CAST")
             expand(inputs.properties["property_map"] as Map<String, String>)
+        }
+
+        doFirst {
+            if (inputs.properties.containsKey("isRelease")) {
+                exclude("*/testing/*")
+            }
         }
     }
 }

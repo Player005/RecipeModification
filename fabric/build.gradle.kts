@@ -81,6 +81,12 @@ tasks {
             @Suppress("UNCHECKED_CAST")
             expand(inputs.properties["property_map"] as Map<String, String>)
         }
+
+        doFirst {
+            if (inputs.properties.containsKey("isRelease")) {
+                exclude("*/testing/*")
+            }
+        }
     }
 
     named("compileTestJava").configure {

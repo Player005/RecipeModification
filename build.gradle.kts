@@ -85,6 +85,22 @@ subprojects {
     }
 }
 
-tasks.jar {
-    enabled = false
+tasks {
+    jar {
+        enabled = false
+    }
+
+    register("buildRelease") {
+        group = "build"
+        description = "Builds the mod for release"
+
+        finalizedBy(":fabric:build")
+        finalizedBy(":neoforge:build")
+
+        doFirst {
+            project(":fabric").tasks.processResources.get().inputs.property("isRelease", true)
+            project(":neoforge").tasks.processResources.get().inputs.property("isRelease", true)
+            project(":common").tasks.processResources.get().inputs.property("isRelease", true)
+        }
+    }
 }
