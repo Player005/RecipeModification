@@ -1,42 +1,41 @@
 plugins {
-    id("net.minecraftforge.gradle") version "[6.0,6.2)"
-    id("org.parchmentmc.librarian.forgegradle") version "1.2.+"
+    id("net.neoforged.moddev.legacyforge") version "2.0.78"
 }
 
 // put a repositories block here for neoforge-only repositories if you need it
 
 dependencies {
-    minecraft("net.minecraftforge:forge:${rootProject.properties["minecraft_version"]}-${rootProject.properties["forge_version"]}")
     implementation(project.project(":common").sourceSets.getByName("main").output)
     annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:0.3.5")!!)
 
     // Add neoforge-only dependencies here.
 }
 
-minecraft {
-    val forgeParchmentVersion = rootProject.properties["parchment_version"].toString()
-        .replace(":", "-") + "-" + rootProject.properties["minecraft_version"]
-    mappings("parchment", forgeParchmentVersion)
+legacyForge {
+    version = rootProject.properties["forge_version"].toString()
 
-    copyIdeResources = true
-
-    val transformerFile = file("src/neoforge/resources/META-INF/accesstransformer.cfg")
-    if (transformerFile.exists()) {
-        accessTransformer(transformerFile)
+    parchment {
+        minecraftVersion = rootProject.properties["parchment_version"].toString().split(":").first()
+        mappingsVersion = rootProject.properties["parchment_version"].toString().split(":").last()
     }
 
     runs {
-        create("client") {
-            workingDirectory(rootProject.file("run/client/${rootProject.properties["minecraft_version"]}"))
-            ideaModule("${rootProject.name}.${project.name}.main")
+        val vmArgs = arrayOf("-XX:+UseZGC", "-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xms500M", "-Xmx2G")
+        create("Client") {
+            client()
+            gameDirectory = rootProject.file("run/client/${rootProject.properties["minecraft_version"]}")
+            jvmArguments.addAll(*vmArgs)
+        }
+        create("Server") {
+            server()
+            gameDirectory = rootProject.file("run/server/${rootProject.properties["minecraft_version"]}")
+            jvmArguments.addAll(*vmArgs)
+        }
+    }
 
-            mods {
-                create(rootProject.properties["mod_id"].toString()) {
-                    client(true)
-                    source(sourceSets.main.get())
-                    source(project(":common").sourceSets.main.get())
-                }
-            }
+    mods {
+        create(rootProject.properties["mod_id"].toString()) {
+            sourceSet(sourceSets.main.get())
         }
     }
 }
@@ -47,42 +46,36 @@ tasks {
         val main = project.project(":common").sourceSets.main.get()
         from(main.output.classesDirs)
         from(main.output.resourcesDir)
-
-        finalizedBy("reobfJar")
     }
 
     named("compileTestJava").configure {
         enabled = false
     }
 
-    val notNeoTask: (Task) -> Boolean = { it: Task ->
-        !it.name.startsWith("compileService")
-    }
+    // NeoGradle compiles the game, but we don't want to add our common code to the game's code
+    val notNeoTask: (Task) -> Boolean = { !it.name.startsWith("neo") && !it.name.startsWith("compileService") }
 
+    // add common code & javadoc to built jars (except for NeoGradle jars)
     withType<JavaCompile>().matching(notNeoTask).configureEach {
         source(project(":common").sourceSets.main.get().allSource)
     }
-
     withType<Javadoc>().matching(notNeoTask).configureEach {
         source(project(":common").sourceSets.main.get().allSource)
     }
 
-    withType<ProcessResources>().configureEach {
-        dependsOn(":common:processResources")
+    withType<ProcessResources>().matching(notNeoTask).configureEach {
+        // include common resources
         from(project(":common").sourceSets.main.get().resources)
 
         // make all properties defined in gradle.properties usable in the mods.toml
         filesMatching("META-INF/mods.toml") {
+            @Suppress("UNCHECKED_CAST")
             expand(rootProject.properties)
         }
     }
 
-
-    processResources {
-        doFirst {
-            if (inputs.properties.containsKey("isRelease")) {
-                exclude("*/testing/*")
-            }
-        }
+    // put all artifacts in the right directory
+    withType<Jar> {
+        destinationDirectory = rootDir.resolve("build").resolve("libs_forge")
     }
 }
