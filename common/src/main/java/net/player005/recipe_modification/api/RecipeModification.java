@@ -40,7 +40,8 @@ public abstract class RecipeModification {
     private static Platform platform;
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
-    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
+    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks =
+        ArrayListMultimap.create();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
@@ -94,7 +95,8 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe), resultModifiers.size());
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe),
+            resultModifiers.size());
     }
 
     /**
@@ -159,7 +161,7 @@ public abstract class RecipeModification {
      *
      * @throws IllegalStateException if the recipe manager isn't initialised yet (see {@link #getRecipeManager()})
      */
-    public static RecipeHolder<?> getByID(ResourceLocation id) {
+    public static @Nullable RecipeHolder<?> getByID(ResourceLocation id) {
         checkInitialised("get recipe by ID");
         return getPlatform().getRecipeByID(recipeManager, id);
     }
@@ -236,11 +238,12 @@ public abstract class RecipeModification {
     private static void checkInitialised(String action) {
         if (!isInitialised())
             throw new IllegalStateException("Can't " + action + " before recipes are initialised." +
-                    "Maybe you need to use RecipeModification#onRecipeInit() ?");
+                "Maybe you need to use RecipeModification#onRecipeInit() ?");
     }
 
     @ApiStatus.Internal
-    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable RecipeInput recipeInput) {
+    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
+                                            @Nullable RecipeInput recipeInput) {
         var i = 0;
         for (var entry : resultModifiers.entries()) {
             if (entry.getKey() != recipe) continue;
@@ -266,27 +269,21 @@ public abstract class RecipeModification {
     }
 
     @ApiStatus.Internal
-    public static void initRegistries(HolderLookup.Provider registries) {
+    public static void onInitRegistries(HolderLookup.Provider registries) {
         RecipeModification.registries = registries;
     }
 
     /**
      * Internal method that should be called on every datapack reload.
      * Initialises all registered {@link RecipeModifierHolder}s, calls all {@link #onRecipeInit(Consumer)}
-     * callbacks and removes recipes registered for removal using {@link #removeRecipe(RecipeHolder)}
+     * callbacks and removes recipes registered for removal using {@link #removeRecipe(ResourceLocation)}
      */
     @ApiStatus.Internal
     private static void applyModifications() {
         var timer = Stopwatch.createStarted();
 
-        var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
-        for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
-            var result = Util.getResultItem(recipeHolder);
-            if (result == null) continue;
-            byResultBuilder.put(result.getItem(), recipeHolder);
-        }
+        recipesByResult = buildRecipeResultMap();
 
-        recipesByResult = byResultBuilder.build();
         logger.debug("Built recipe by result map for {} recipes in {}", recipeManager.getRecipes().size(), timer);
         timer.reset().start();
 
@@ -299,7 +296,7 @@ public abstract class RecipeModification {
         var modified = 0;
 
         logger.info("Found {} recipe modifiers in datapacks, {} total",
-                modifiersFromDatapack.size(), getAllModifiers().size());
+            modifiersFromDatapack.size(), getAllModifiers().size());
 
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
@@ -308,28 +305,55 @@ public abstract class RecipeModification {
                 if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
             }
 
-            // apply recipeModifiers
-            var appliedOnRecipe = 0;
-            for (RecipeModifierHolder modifier : getAllModifiers()) {
-                if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
-                RecipeHelper helper = getPlatform().getHelper();
-                modifier.apply(recipeHolder.value(), helper);
-                appliedOnRecipe++;
-            }
+            var appliedOnRecipe = applyAllModifiers(recipeHolder, registryAccess);
 
             if (appliedOnRecipe > 0)
                 logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
 
-
             for (ResourceLocation id : toRemove) {
                 if (recipeHolder.id().location().equals(id)) {
-                    // remove recipe from both maps stored in RecipeManager
-                    recipeManager.getRecipes().remove(recipeHolder); // TODO: move to platform
+                    recipeManager.getRecipes().remove(recipeHolder); // TODO
                 }
             }
             modified += appliedOnRecipe;
         }
+
         logger.info("Modified {} recipes in {}", modified, timer);
         recipeIterationCallbacks.clear();
+    }
+
+    private static int applyAllModifiers(RecipeHolder<?> recipe, HolderLookup.Provider registryAccess) {
+        var appliedOnRecipe = 0;
+        for (RecipeModifierHolder modifier : getAllModifiers()) {
+            if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
+            try {
+                RecipeHelper helper = getPlatform().getHelper();
+                modifier.apply(recipe.value(), helper);
+            } catch (Exception e) {
+                handleError(recipe, modifier, e);
+            }
+            appliedOnRecipe++;
+        }
+        return appliedOnRecipe;
+    }
+
+    private static ImmutableMultimap<Item, RecipeHolder<?>> buildRecipeResultMap() {
+        var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
+        for (RecipeHolder<?> recipe : recipeManager.getRecipes()) {
+            var result = Util.getResultItem(recipe);
+            if (result == null) continue;
+            byResultBuilder.put(result.getItem(), recipe);
+        }
+
+        return byResultBuilder.build();
+    }
+
+    private static void handleError(RecipeHolder<?> recipe, RecipeModifierHolder modifier, Exception e) {
+        if (platform.isDevelopmentEnvironment()) {
+            logger.error("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipe.id(), e);
+        } else {
+            logger.warn("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipe.id());
+            logger.debug("Exception:", e);
+        }
     }
 }

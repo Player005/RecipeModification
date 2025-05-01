@@ -10,6 +10,10 @@ import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * This modifies the return value of {@link Recipe#assemble(RecipeInput, HolderLookup.Provider)} in order for
+ * result modifiers to work.
+ */
 @Mixin({
         ArmorDyeRecipe.class, BannerDuplicateRecipe.class, BookCloningRecipe.class, DecoratedPotRecipe.class,
         FireworkRocketRecipe.class, FireworkStarFadeRecipe.class, FireworkStarRecipe.class,

@@ -35,12 +35,12 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.addIngredient(ingredient);
         });
 
-        registerDeserializer("remove_ingredient", object -> {
+        registerDeserializer("remove_ingredients", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredients"));
             return RecipeModifier.removeIngredients(ingredientSelector);
         });
 
-        registerDeserializer("replace_ingredient", object -> {
+        registerDeserializer("replace_ingredients", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredient"));
             var newIngredient = Ingredient.CODEC.parse(serializationContext, object.get("new_ingredient")).getOrThrow();
             return RecipeModifier.replaceIngredient(ingredientSelector, newIngredient);
@@ -52,7 +52,7 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.addAlternative(ingredientSelector, alternative);
         });
 
-        registerDeserializer("replace_result", object -> {
+        registerDeserializer("replace_result_item", object -> {
             var newResult = ItemStack.CODEC.parse(serializationContext, object.get("new_result")).getOrThrow();
             return RecipeModifier.replaceResultItem(newResult);
         });

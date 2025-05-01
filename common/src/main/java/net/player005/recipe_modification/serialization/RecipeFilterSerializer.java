@@ -9,11 +9,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.player005.recipe_modification.api.RecipeFilter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 public abstract class RecipeFilterSerializer {
+
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
 
     public static RecipeFilter fromJson(JsonElement json) {
@@ -32,6 +34,14 @@ public abstract class RecipeFilterSerializer {
     }
 
     private static RecipeFilter fromString(String string) {
+        if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
+        if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
+        if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
+        var rl = ResourceLocation.tryParse(string);
+        if (rl == null)
+            throw new RecipeModifierParsingException("Invalid resource location in shorthand recipe filter: " + string);
+        if (BuiltInRegistries.ITEM.containsKey(rl))
+            return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl).get().value());
         return RecipeFilter.idEquals(ResourceLocation.parse(string));
     }
 
@@ -42,7 +52,8 @@ public abstract class RecipeFilterSerializer {
             return RecipeFilter.acceptsIngredient(item);
         });
         registerSerializer("result_item_is", (json) -> {
-            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString())).orElseThrow().value();
+            var item =
+                BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString())).orElseThrow().value();
             return RecipeFilter.resultItemIs(item);
         });
         registerSerializer("id_equals", (json) -> {
@@ -52,6 +63,24 @@ public abstract class RecipeFilterSerializer {
         registerSerializer("namespace_equals", (json) -> {
             var namespace = json.get("namespace").getAsString();
             return RecipeFilter.namespaceEquals(namespace);
+        });
+        registerSerializer("and", (json) -> {
+            var jsonFilters = json.getAsJsonArray("filters");
+            var filters = new ArrayList<>();
+            for (var filter : jsonFilters)
+                filters.add(fromJson(filter));
+            return RecipeFilter.and(filters.toArray(RecipeFilter[]::new));
+        });
+        registerSerializer("or", (json) -> {
+            var jsonFilters = json.getAsJsonArray("filters");
+            var filters = new ArrayList<>();
+            for (var filter : jsonFilters)
+                filters.add(fromJson(filter));
+            return RecipeFilter.or(filters.toArray(RecipeFilter[]::new));
+        });
+        registerSerializer("not", (json) -> {
+            var filter = fromJson(json.get("filter"));
+            return RecipeFilter.not(filter);
         });
     }
 

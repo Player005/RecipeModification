@@ -14,24 +14,23 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.player005.recipe_modification.api.Platform;
 import net.player005.recipe_modification.api.RecipeHelper;
-import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNullByDefault;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NotNullByDefault
-public class Platform_1_21_4 implements Platform {
+public abstract class Platform_1_21_4 implements Platform {
 
     @Override
-    public RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id) {
-        return Objects.requireNonNull(((RecipeManagerAccessor) recipeManager).getRecipes().byKey(ResourceKey.create(
+    public @Nullable RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id) {
+        return recipeManager.byKey(ResourceKey.create(
                 Registries.RECIPE, id
-        )));
+        )).orElse(null);
     }
 
     @Override

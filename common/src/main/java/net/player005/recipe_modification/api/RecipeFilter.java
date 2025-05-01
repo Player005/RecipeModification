@@ -103,5 +103,4 @@ public interface RecipeFilter {
     static RecipeFilter not(RecipeFilter filter) {
         return (recipe, registryAccess) -> !filter.shouldApply(recipe, registryAccess);
     }
-
 }

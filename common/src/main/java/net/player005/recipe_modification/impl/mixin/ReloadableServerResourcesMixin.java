@@ -23,6 +23,6 @@ public abstract class ReloadableServerResourcesMixin {
                                   FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection,
                                   List<Registry.PendingTags<?>> postponedTags, int functionCompilationLevel,
                                   CallbackInfo ci) {
-        RecipeModification.initRegistries(registries);
+        RecipeModification.onInitRegistries(registries);
     }
 }

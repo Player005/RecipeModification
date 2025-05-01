@@ -7,6 +7,9 @@ import net.player005.recipe_modification.impl.IngredientAccessor;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
+/**
+ * This mixin provides the implementation for the {@link IngredientAccessor#replaceValues(HolderSet)} method
+ */
 @Mixin(Ingredient.class)
 public abstract class IngredientAccessorInjector implements IngredientAccessor {
 

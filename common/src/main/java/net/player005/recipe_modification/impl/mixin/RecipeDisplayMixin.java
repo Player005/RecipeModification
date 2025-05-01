@@ -13,6 +13,9 @@ import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * This mixin implements {@link RecipeDisplayAccessor} so that result modifications can be displayed correctly.
+ */
 @Mixin({
     FurnaceRecipeDisplay.class, ShapedCraftingRecipeDisplay.class, ShapelessCraftingRecipeDisplay.class,
     SmithingRecipeDisplay.class, StonecutterRecipeDisplay.class
@@ -30,6 +33,10 @@ public abstract class RecipeDisplayMixin implements RecipeDisplayAccessor {
         cir.setReturnValue(new SlotDisplay.ItemStackSlotDisplay(newResult));
     }
 
+    /**
+     * A reference to the parent display, which is set in {@link RecipeMixin1#modifyDisplay(CallbackInfoReturnable)}.
+     * This is required to know which recipe's result modifiers to apply.
+     */
     @Unique
     public Recipe<?> recipeModification$parentRecipe;
 

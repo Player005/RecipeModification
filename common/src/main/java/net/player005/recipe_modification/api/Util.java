@@ -8,14 +8,17 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 
 public class Util {
+
     public static @Nullable ItemStack getResultItem(Recipe<?> recipe) {
         for (var recipeDisplay : recipe.display()) {
-            return recipeDisplay.result().resolveForFirstStack(new ContextMap.Builder().create(new ContextKeySet.Builder().build()));
+            return recipeDisplay.result().resolveForFirstStack(
+                new ContextMap.Builder().create(new ContextKeySet.Builder().build())
+            );
         }
         return null;
     }
 
-    public static @Nullable ItemStack getResultItem(RecipeHolder<?>recipeHolder) {
+    public static @Nullable ItemStack getResultItem(RecipeHolder<?> recipeHolder) {
         return getResultItem(recipeHolder.value());
     }
 }

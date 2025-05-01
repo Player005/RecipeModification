@@ -11,6 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
+/**
+ * This mixin sets the parent recipe field on the recipe display, which is required for result modifications
+ * to be displayed correctly.
+ */
 @Mixin({
     AbstractCookingRecipe.class, ShapedRecipe.class, ShapelessRecipe.class,
     SmithingTransformRecipe.class, SmithingTrimRecipe.class, StonecutterRecipe.class, TransmuteRecipe.class
