@@ -1,6 +1,6 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -9,7 +9,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * An object that selects ingredients based on certain criteria when given a recipe.
@@ -48,8 +47,7 @@ public interface IngredientSelector {
         return (recipe, helper) -> {
             var toReturn = new ArrayList<Ingredient>();
             for (var ingredient : recipe.placementInfo().ingredients())
-                for (Holder<Item> ingredientItem : ingredient.items().collect(Collectors.toSet()))
-                    if (item.equals(ingredientItem.value())) toReturn.add(ingredient);
+                if (ingredient.acceptsItem(BuiltInRegistries.ITEM.wrapAsHolder(item))) toReturn.add(ingredient);
             return toReturn.toArray(Ingredient[]::new);
         };
     }
