@@ -1,0 +1,25 @@
+{
+  "target_recipes": {
+    "type": "and",
+    "filters": [
+      {
+        "type": "accepting_ingredient",
+        "item": {
+          "id": "minecraft:blaze_powder"
+        }
+      },
+      {
+        "type": "accepting_ingredient",
+        "item": {
+          "id": "minecraft:ender_pearl"
+        }
+      }
+    ]
+  },
+  "modifiers": [
+    {
+      "type": "remove_ingredients",
+      "ingredients": 0
+    }
+  ]
+}

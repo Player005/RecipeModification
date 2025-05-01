@@ -1,0 +1,25 @@
+{
+  "target_recipes": {
+    "type": "or",
+    "filters": [
+      {
+        "type": "accepting_ingredient",
+        "item": {
+          "id": "minecraft:ink_sac"
+        }
+      },
+      {
+        "type": "accepting_ingredient",
+        "item": {
+          "id": "minecraft:white_wool"
+        }
+      }
+    ]
+  },
+  "modifiers": [
+    {
+      "type": "add_ingredient",
+      "ingredient": "minecraft:stone"
+    }
+  ]
+}
