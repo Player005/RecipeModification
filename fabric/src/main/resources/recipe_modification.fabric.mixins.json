@@ -1,0 +1,9 @@
+{
+  "package": "net.player005.recipe_modification.fabric.mixin",
+  "mixins": [
+    "ReloadableServerResourcesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

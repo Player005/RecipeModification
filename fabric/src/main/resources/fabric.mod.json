@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "version": "${mod_version}",
+  "license": "${mod_license}",
+  "icon": "icon.png",
+  "entrypoints": {
+    "main": [
+      "net.player005.recipe_modification.fabric.ModFabric"
+    ]
+  },
+  "mixins": [
+    "recipe_modification.mixins.json",
+    "recipe_modification.fabric.mixins.json"
+  ],
+  "depends": {
+    "minecraft": "${mc_versions_fabric}"
+  }
+}

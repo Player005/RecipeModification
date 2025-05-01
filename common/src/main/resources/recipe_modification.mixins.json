@@ -1,0 +1,14 @@
+{
+  "package": "net.player005.recipe_modification.impl.mixin",
+  "mixins": [
+    "IngredientAccessorInjector",
+    "RecipeDisplayMixin",
+    "RecipeManagerAccessor",
+    "RecipeMixin1",
+    "RecipeMixin2",
+    "ReloadableServerResourcesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
