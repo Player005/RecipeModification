@@ -1,7 +1,7 @@
 import net.neoforged.moddevgradle.dsl.RunModel
 
 plugins {
-    id("net.neoforged.moddev") version "2.0.78"
+    id("net.neoforged.moddev") version "2.0.95"
 }
 
 // put a repositories block here for neoforge-only repositories if you need it
