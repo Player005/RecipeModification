@@ -84,10 +84,10 @@ public abstract class RecipeFilterSerializer {
             var filter = fromJson(json.get("filter"));
             return RecipeFilter.not(filter);
         });
-        registerSerializer("is_type", (json) -> {
-            var type = BuiltInRegistries.RECIPE_TYPE.getValue(ResourceLocation.parse(json.get("type").getAsString()));
+        registerSerializer("is_recipe_type", (json) -> {
+            var type = BuiltInRegistries.RECIPE_TYPE.getValue(ResourceLocation.parse(json.get("recipe_type").getAsString()));
             if (type == null)
-                throw new RecipeModifierParsingException("Unknown recipe type: " + json.get("type").getAsString());
+                throw new RecipeModifierParsingException("Unknown recipe type: " + json.get("recipe_type").getAsString());
             return RecipeFilter.isType(type);
         });
     }
