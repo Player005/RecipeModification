@@ -129,6 +129,24 @@ Example:
 
 This would match all recipes from the Create mod.
 
+### "is_recipe_type"
+
+This can be used to filter for specific recipe types, i.e.
+shaped crafting, shapeless crafting, smelting etc.
+
+This filter is most useful when combined with other filters
+(see also: `and`, `or`, `not`)
+
+Example:
+```json5
+{
+  "type": "is_recipe_type",
+  "recipe_type": "minecraft:crafting_shapeless"
+}
+```
+
+This would match all shapeless crafting recipes.
+
 ### "and" and "or"
 
 These filters take a list of recipe filters as parameters and
