@@ -6,7 +6,9 @@ plugins {
     id("fabric-loom") version "1.10-SNAPSHOT"
 }
 
-// add a repositories block here for fabric-only dependencies if you need it
+repositories {
+    maven("https://maven.shedaniel.me")
+}
 
 dependencies.project(":common")
 
@@ -23,7 +25,7 @@ dependencies {
 
     implementation(project.project(":common").sourceSets.getByName("main").output)
 
-    // Add fabric-only dependencies here.
+    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:18.0.804")
 }
 
 loom {

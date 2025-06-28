@@ -2,12 +2,14 @@ plugins {
     id("net.neoforged.moddev") version "2.0.78"
 }
 
-// put a repositories block here for neoforge-only repositories if you need it
+repositories {
+    maven("https://maven.shedaniel.me")
+}
 
 dependencies {
     implementation(project.project(":common").sourceSets.getByName("main").output)
 
-    // Add neoforge-only dependencies here.
+    runtimeOnly("me.shedaniel:RoughlyEnoughItems-forge:14.1.786")
 }
 
 neoForge {
