@@ -6,6 +6,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 
 /**
  * A simple functional interface to filter recipes.
@@ -72,6 +73,13 @@ public interface RecipeFilter {
     }
 
     /**
+     * Returns a recipe filter that filters for recipes of the given type.
+     */
+    static RecipeFilter isType(RecipeType<?> recipeType) {
+        return (recipe, registryAccess) -> recipe.value().getType().equals(recipeType);
+    }
+
+    /**
      * Concatenates multiple given filters with a logical and.
      */
     static RecipeFilter and(RecipeFilter... filters) {
@@ -97,5 +105,4 @@ public interface RecipeFilter {
     static RecipeFilter not(RecipeFilter filter) {
         return (recipe, registryAccess) -> !filter.shouldApply(recipe, registryAccess);
     }
-
 }

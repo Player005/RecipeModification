@@ -7,6 +7,8 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.player005.recipe_modification.api.RecipeFilter;
 
 import java.util.ArrayList;
@@ -17,6 +19,9 @@ import java.util.function.Function;
 public abstract class RecipeFilterSerializer {
 
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
+
+    private static final ResourceLocation CRAFTING_SHAPED = ResourceLocation.parse("crafting_shaped");
+    private static final ResourceLocation CRAFTING_SHAPELESS = ResourceLocation.parse("crafting_shapeless");
 
     public static RecipeFilter fromJson(JsonElement json) {
         if (json instanceof JsonPrimitive primitive && primitive.isString())
@@ -80,6 +85,17 @@ public abstract class RecipeFilterSerializer {
         registerSerializer("not", (json) -> {
             var filter = fromJson(json.get("filter"));
             return RecipeFilter.not(filter);
+        });
+        registerSerializer("is_recipe_type", (json) -> {
+            var rl = ResourceLocation.parse(json.get("recipe_type").getAsString());
+
+            if (rl.equals(CRAFTING_SHAPED)) return (recipe, registries) -> recipe.value() instanceof ShapedRecipe;
+            if (rl.equals(CRAFTING_SHAPELESS)) return (recipe, registries) -> recipe.value() instanceof ShapelessRecipe;
+
+            var type = BuiltInRegistries.RECIPE_TYPE.get(rl);
+            if (type == null)
+                throw new RecipeModifierParsingException("Unknown recipe type: " + rl);
+            return RecipeFilter.isType(type);
         });
     }
 
