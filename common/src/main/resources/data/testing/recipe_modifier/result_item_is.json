@@ -1,14 +1,14 @@
 {
   "target_recipes": {
     "type": "result_item_is",
-    "item": "minecraft:stone"
+    "item": "minecraft:cobblestone_slab"
   },
   "modifiers": [
     {
       "type": "replace_result_item",
       "new_result": {
         "Count": 1,
-        "id": "minecraft:cobblestone"
+        "id": "minecraft:cobblestone_stairs"
       }
     }
   ]

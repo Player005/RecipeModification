@@ -2,8 +2,8 @@
   "target_recipes": {
     "type": "not",
     "filter": {
-      "type": "namespace_equals",
-      "namespace": "minecraft"
+      "type": "is_recipe_type",
+      "recipe_type": "minecraft:crafting_shapeless"
     }
   },
   "modifiers": [
