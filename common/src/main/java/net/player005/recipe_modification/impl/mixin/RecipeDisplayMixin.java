@@ -23,7 +23,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class RecipeDisplayMixin implements RecipeDisplayAccessor {
 
     @SuppressWarnings("MixinAnnotationTarget")
-    @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "result", ret = SlotDisplay.class))
+    @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "result", ret =
+        SlotDisplay.class))
     public void modifyResult(CallbackInfoReturnable<SlotDisplay> cir) {
         if (recipeModification$parentRecipe == null) return;
         var currentResult = cir.getReturnValue()

@@ -59,7 +59,7 @@ public abstract class RecipeModifierSerializer {
 
         registerDeserializer("modify_result_components", object -> {
             var patch = DataComponentPatch.CODEC.parse(serializationContext, object.get("components")).getOrThrow();
-            return RecipeModifier.addResultComponents(patch);
+            return RecipeModifier.modifyResultComponents(patch);
         });
     }
 
