@@ -11,6 +11,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -20,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -95,22 +95,17 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe),
-            resultModifiers.size());
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total",
+            findRecipeHolder(recipe).id().location(), resultModifiers.size());
     }
 
     /**
-     * Finds the ResourceLocation of the given recipe. Try to avoid this method if possible,
+     * Finds the RecipeHolder of the given recipe. Try to avoid this method if possible,
      * as it will iterate through all recipes every time it is called.
      */
-    public static ResourceLocation findRecipeID(Recipe<?> recipe) {
-        AtomicReference<ResourceLocation> found = new AtomicReference<>();
-        forAllRecipes(recipeHolder -> {
-            if (recipeHolder.value().equals(recipe)) {
-                found.set(recipeHolder.id().location());
-            }
-        });
-        return found.get();
+    public static @UnknownNullability RecipeHolder<?> findRecipeHolder(Recipe<?> recipe) {
+        return ((RecipeManagerAccessor) getRecipeManager()).getRecipes().values().stream()
+            .filter(r -> r.value() == recipe).findAny().orElse(null);
     }
 
     /**
@@ -293,7 +288,6 @@ public abstract class RecipeModification {
         logger.debug("Executed {} recipe callbacks in {}", recipeManagerCallbacks.size(), timer);
 
         timer.reset().start();
-        var modified = 0;
 
         logger.info("Found {} recipe modifiers in datapacks, {} total",
             modifiersFromDatapack.size(), getAllModifiers().size());
@@ -305,25 +299,20 @@ public abstract class RecipeModification {
                 if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
             }
 
-            var appliedOnRecipe = applyAllModifiers(recipeHolder, registryAccess);
-
-            if (appliedOnRecipe > 0)
-                logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
+            applyAllModifiers(recipeHolder, registryAccess);
 
             for (ResourceLocation id : toRemove) {
                 if (recipeHolder.id().location().equals(id)) {
                     recipeManager.getRecipes().remove(recipeHolder); // TODO
                 }
             }
-            modified += appliedOnRecipe;
         }
 
-        logger.info("Modified {} recipes in {}", modified, timer);
+        logger.info("Applied {} recipe modifiers in {}", getAllModifiers().size(), timer);
         recipeIterationCallbacks.clear();
     }
 
-    private static int applyAllModifiers(RecipeHolder<?> recipe, HolderLookup.Provider registryAccess) {
-        var appliedOnRecipe = 0;
+    private static void applyAllModifiers(RecipeHolder<?> recipe, HolderLookup.Provider registryAccess) {
         for (RecipeModifierHolder modifier : getAllModifiers()) {
             if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
             try {
@@ -332,9 +321,7 @@ public abstract class RecipeModification {
             } catch (Exception e) {
                 handleError(recipe, modifier, e);
             }
-            appliedOnRecipe++;
         }
-        return appliedOnRecipe;
     }
 
     private static ImmutableMultimap<Item, RecipeHolder<?>> buildRecipeResultMap() {

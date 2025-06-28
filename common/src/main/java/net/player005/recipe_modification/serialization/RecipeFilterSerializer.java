@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@SuppressWarnings("SuspiciousToArrayCall")
 public abstract class RecipeFilterSerializer {
 
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
@@ -41,6 +42,7 @@ public abstract class RecipeFilterSerializer {
         if (rl == null)
             throw new RecipeModifierParsingException("Invalid resource location in shorthand recipe filter: " + string);
         if (BuiltInRegistries.ITEM.containsKey(rl))
+            //noinspection OptionalGetWithoutIsPresent
             return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl).get().value());
         return RecipeFilter.idEquals(ResourceLocation.parse(string));
     }
@@ -81,6 +83,12 @@ public abstract class RecipeFilterSerializer {
         registerSerializer("not", (json) -> {
             var filter = fromJson(json.get("filter"));
             return RecipeFilter.not(filter);
+        });
+        registerSerializer("is_type", (json) -> {
+            var type = BuiltInRegistries.RECIPE_TYPE.getValue(ResourceLocation.parse(json.get("type").getAsString()));
+            if (type == null)
+                throw new RecipeModifierParsingException("Unknown recipe type: " + json.get("type").getAsString());
+            return RecipeFilter.isType(type);
         });
     }
 

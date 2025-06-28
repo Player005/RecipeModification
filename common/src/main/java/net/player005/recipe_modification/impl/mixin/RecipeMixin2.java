@@ -22,10 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         SmithingTransformRecipe.class, SmithingTrimRecipe.class, TippedArrowRecipe.class, TransmuteRecipe.class
 })
 public class RecipeMixin2 {
-    @SuppressWarnings("MixinAnnotationTarget")
     @Inject(target = @Desc(value = "assemble", args = {RecipeInput.class, HolderLookup.Provider.class}, ret = ItemStack.class),
             at = @At("RETURN"), cancellable = true)
     public void onAssemble(RecipeInput recipeInput, HolderLookup.Provider registries, CallbackInfoReturnable<ItemStack> cir) {
-        cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput));
+        cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput).copy());
     }
 }
