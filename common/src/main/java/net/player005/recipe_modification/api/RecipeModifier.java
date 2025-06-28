@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @FunctionalInterface
@@ -83,20 +84,34 @@ public interface RecipeModifier {
         };
     }
 
-    static RecipeModifier modifyResultItem(Function<ItemStack, ItemStack> modifier) {
+    /**
+     * Replaces the result item of the recipe.
+     * @param modifier Function that takes the old result item and returns the new result item
+     */
+    static RecipeModifier replaceResultItem(Function<ItemStack, ItemStack> modifier) {
         return (recipe, helper) -> RecipeModification.registerRecipeResultModifier(recipe,
-            (recipe1, result, recipeInput) -> modifier.apply(result)
-        );
+            (recipe1, result, recipeInput) -> modifier.apply(result));
     }
 
+    /**
+     * Replaces the result item of the recipe.
+     */
     static RecipeModifier replaceResultItem(ItemStack newResult) {
-        return modifyResultItem(stack -> newResult);
+        return replaceResultItem(stack -> newResult.copy());
     }
 
-    static RecipeModifier addResultComponents(DataComponentPatch patch) {
-        return modifyResultItem(stack -> {
-            stack.applyComponents(patch);
-            return stack;
+    static RecipeModifier modifyResultComponents(DataComponentPatch patch) {
+        return modifyResultItem(stack -> stack.applyComponents(patch));
+    }
+
+    /**
+     * Can be used to modify the result item of the recipe.
+     * @param itemStackModifier A consumer that takes an item stack, and applies the modifications to it.
+     */
+    static RecipeModifier modifyResultItem(Consumer<ItemStack> itemStackModifier) {
+        return replaceResultItem(itemStack -> {
+            itemStackModifier.accept(itemStack);
+            return itemStack;
         });
     }
 }

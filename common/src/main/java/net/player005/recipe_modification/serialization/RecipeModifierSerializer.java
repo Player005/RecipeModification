@@ -37,7 +37,7 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.removeIngredients(ingredientSelector);
         });
 
-        registerDeserializer("replace_ingredient", object -> {
+        registerDeserializer("replace_ingredients", object -> {
             var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredient"));
             var newIngredient = Ingredient.CODEC.parse(JsonOps.INSTANCE, object.get("new_ingredient")).getOrThrow();
             return RecipeModifier.replaceIngredient(ingredientSelector, newIngredient);
@@ -56,7 +56,7 @@ public abstract class RecipeModifierSerializer {
 
         registerDeserializer("modify_result_components", object -> {
             var patch = DataComponentPatch.CODEC.parse(JsonOps.INSTANCE, object.get("components")).getOrThrow();
-            return RecipeModifier.addResultComponents(patch);
+            return RecipeModifier.modifyResultComponents(patch);
         });
     }
 

@@ -10,6 +10,10 @@ import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+/**
+ * This modifies the return value of {@link Recipe#assemble(RecipeInput, net.minecraft.core.HolderLookup.Provider)} in order for
+ * result modifiers to work.
+ */
 @Mixin({
         AbstractCookingRecipe.class, ArmorDyeRecipe.class, BannerDuplicateRecipe.class,
         BookCloningRecipe.class, DecoratedPotRecipe.class,
@@ -26,7 +30,6 @@ public class RecipeMixin2 {
     @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "assemble", args =
             {RecipeInput.class, net.minecraft.core.HolderLookup.Provider.class}, ret = ItemStack.class), require = 0)
     public void modifyAssemble(CallbackInfoReturnable<ItemStack> cir, @Local(argsOnly = true) RecipeInput recipeInput) {
-        cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput).copy());
+        cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput));
     }
-
 }
