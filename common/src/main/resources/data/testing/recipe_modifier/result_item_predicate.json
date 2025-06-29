@@ -10,10 +10,9 @@
   },
   "modifiers": [
     {
-      "type": "replace_result_item",
-      "new_result": {
-        "id": "stone_shovel"
-      }
+      "type": "modify_result_item",
+      "function": "set_count",
+      "count": 2
     }
   ]
 }

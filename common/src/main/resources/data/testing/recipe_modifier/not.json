@@ -8,7 +8,8 @@
   },
   "modifiers": [
     {
-      "type": "modify_result_components",
+      "type": "modify_result_item",
+      "function": "set_components",
       "components": {
         "item_name": "{\"text\": \"New Name\"}"
       }

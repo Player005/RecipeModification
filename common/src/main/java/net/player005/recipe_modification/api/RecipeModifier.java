@@ -1,6 +1,5 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -98,10 +97,6 @@ public interface RecipeModifier {
      */
     static RecipeModifier replaceResultItem(ItemStack newResult) {
         return replaceResultItem(stack -> newResult.copy());
-    }
-
-    static RecipeModifier modifyResultComponents(DataComponentPatch patch) {
-        return modifyResultItem(stack -> stack.applyComponents(patch));
     }
 
     /**
