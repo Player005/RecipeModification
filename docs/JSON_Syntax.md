@@ -266,7 +266,7 @@ Examples:
 
 ```json5
 {
-  "filter": "minecraft:stone"
+  "target_recipes": "minecraft:stone"
 }
 ```
 
@@ -275,7 +275,7 @@ cobblestone in a furnace).
 
 ```json5
 {
-  "filter": "!create"
+  "target_recipes": "!create"
 }
 ```
 
@@ -288,8 +288,7 @@ recipes.
 
 There are currently six types of recipe modifiers:
 `add_ingredient`, `remove_ingredient`, `replace_ingredient`,
-`add_alternative`, `replace_result_item` and
-`modify_result_components`.
+`add_alternative`, `modify_result_item` and `replace_result_item`.
 
 Mods can also define custom recipe modifiers in java code.
 
@@ -369,9 +368,29 @@ This would add dirt as an alternative to stone for selected
 recipes, i.e. now either dirt or stone could be used to
 craft the item.
 
+### "modify_result_item"
+
+This modifier allows you to manipulate the result item stack of a recipe by
+applying [Item modifiers](https://minecraft.wiki/w/Item_modifier) to it.
+
+Example:
+
+```json5
+{
+  "type": "modify_result_item",
+  "function": "set_count",
+  "count": 2
+}
+```
+
+This changes the amount of items of the result item stack to two.
+
 ### "replace_result_item"
 
 This modifier replaces the result of the recipe with a new one.
+
+**Note**: it should generally be preferred to use `modify_result_item` instead,
+where possible.
 
 Example:
 
@@ -385,28 +404,6 @@ Example:
 ```
 
 This would replace the result of the recipe with dirt.
-
-### "modify_result_components"
-
-This modifier allows you to set
-[data components](https://minecraft.wiki/w/Data_component_format)
-on the result item.
-
-Example:
-
-```json5
-{
-  "type": "modify_result_components",
-  "components": {
-    // map of component IDs to component values
-    "item_name": {
-      "text": "New Name"
-    }
-  }
-}
-```
-
-This would set the name of the result item to "New Name".
 
 ## Ingredient Selector Syntax
 

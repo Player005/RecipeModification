@@ -3,9 +3,9 @@ package net.player005.recipe_modification.serialization;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.player005.recipe_modification.api.RecipeModifier;
 
 import java.util.HashMap;
@@ -54,9 +54,9 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.replaceResultItem(newResult);
         });
 
-        registerDeserializer("modify_result_components", object -> {
-            var patch = DataComponentPatch.CODEC.parse(JsonOps.INSTANCE, object.get("components")).getOrThrow();
-            return RecipeModifier.modifyResultComponents(patch);
+        registerDeserializer("modify_result_item", object -> {
+            var function = LootItemFunctions.CODEC.parse(JsonOps.INSTANCE, object).getOrThrow().value();
+            return RecipeModifier.modifyResultItem(itemStack -> function.apply(itemStack, null));
         });
     }
 
