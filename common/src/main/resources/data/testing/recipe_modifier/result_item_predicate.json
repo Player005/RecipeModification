@@ -1,0 +1,19 @@
+{
+  "target_recipes": {
+    "type": "result_item_predicate",
+    "predicate": {
+      "items": "#c:foods",
+      "count": {
+        "min": 3
+      }
+    }
+  },
+  "modifiers": [
+    {
+      "type": "replace_result_item",
+      "new_result": {
+        "id": "stone_shovel"
+      }
+    }
+  ]
+}

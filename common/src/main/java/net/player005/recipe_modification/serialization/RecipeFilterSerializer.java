@@ -1,11 +1,16 @@
 package net.player005.recipe_modification.serialization;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
@@ -16,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@SuppressWarnings("SuspiciousToArrayCall")
 public abstract class RecipeFilterSerializer {
 
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
@@ -56,9 +62,26 @@ public abstract class RecipeFilterSerializer {
             var item = ItemStack.CODEC.parse(JsonOps.INSTANCE, json.get("item")).getOrThrow();
             return RecipeFilter.acceptsIngredient(item);
         });
-        registerSerializer("result_item_is", (json) -> {
-            var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString()));
-            return RecipeFilter.resultItemIs(item);
+        registerSerializer("result_item_is", json -> {
+            if (json.has("items"))
+                return createFilterByResultItem(json.get("items"));
+            if (json.has("item"))
+                return createFilterByResultItem(json.get("item"));
+            throw new RecipeModifierParsingException("'result_item_is' filter has no 'items' or 'item' defined - " +
+                "typo?");
+        });
+        registerSerializer("result_item_predicate", (json) -> {
+            RecipeFilter itemFilter = null;
+            json = json.get("predicate").getAsJsonObject();
+
+            if (json.has("items")) {
+                itemFilter = createFilterByResultItem(json.remove("items"));
+            }
+
+            var predicate = ItemPredicate.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+            return itemFilter == null ?
+                RecipeFilter.resultItemMatches(predicate) :
+                RecipeFilter.and(itemFilter, RecipeFilter.resultItemMatches(predicate));
         });
         registerSerializer("id_equals", (json) -> {
             var id = ResourceLocation.parse(json.get("id").getAsString());
@@ -97,6 +120,27 @@ public abstract class RecipeFilterSerializer {
                 throw new RecipeModifierParsingException("Unknown recipe type: " + rl);
             return RecipeFilter.isType(type);
         });
+    }
+
+    private static RecipeFilter createFilterByResultItem(JsonElement json) {
+        if (json instanceof JsonArray array) {
+            Item[] items = array.asList().stream().map(jsonElement ->
+                BuiltInRegistries.ITEM.get(ResourceLocation.parse(jsonElement.getAsString()))).toArray(Item[]::new);
+            return RecipeFilter.resultItemIs(items);
+        }
+
+        if (!(json instanceof JsonPrimitive primitive && primitive.isString()))
+            throw new RecipeModifierParsingException("invalid result item recipe filter: must be either string or " +
+                "array of strings: " + json);
+
+        var str = json.getAsString();
+        if (str.startsWith("#")) {
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, ResourceLocation.parse(str.replace("#", "")));
+            return RecipeFilter.resultItemIs(itemTag);
+        }
+
+        var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(str));
+        return RecipeFilter.resultItemIs(item);
     }
 
     public static void registerSerializer(String name, Function<JsonObject, RecipeFilter> deserializer) {

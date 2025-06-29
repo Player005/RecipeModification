@@ -1,5 +1,6 @@
 package net.player005.recipe_modification.api;
 
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -7,6 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * A simple functional interface to filter recipes.
@@ -52,10 +54,21 @@ public interface RecipeFilter {
     }
 
     /**
+     * Returns a recipe filter that filters for recipes that create any of the given items.
+     */
+    static RecipeFilter resultItemIs(Item[] items) {
+        return (recipe, registryAccess) -> ArrayUtils.contains(items, recipe.value().getResultItem(registryAccess));
+    }
+
+    /**
      * Returns a recipe filter that filters for recipes that create a result item contained in the given tag.
      */
     static RecipeFilter resultItemIs(TagKey<Item> itemTag) {
         return (recipe, registryAccess) -> recipe.value().getResultItem(registryAccess).is(itemTag);
+    }
+
+    static RecipeFilter resultItemMatches(ItemPredicate predicate) {
+        return (recipe, registryAccess) -> predicate.test(recipe.value().getResultItem(registryAccess));
     }
 
     /**

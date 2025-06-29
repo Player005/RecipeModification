@@ -99,5 +99,4 @@ public interface RecipeModifier {
             return stack;
         });
     }
-
 }

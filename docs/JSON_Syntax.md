@@ -38,9 +38,9 @@ modifications that will be applied to the matching recipes.
 A recipe filter takes the list of all available recipes and
 selects one or more recipes from them.
 
-There are currently Five different types of recipe filters:
-`all_recipes`, `accepting_ingredient`, `result_item_is`, `id_equals`
-and `namespace_equals`.
+There are currently seven different types of recipe filters:
+`all_recipes`, `accepting_ingredient`, `is_recipe_type`, `result_item_is`,
+`result_item_predicate`, `id_equals` and `namespace_equals`.
 Recipe filters can also be chained using `and` and `or` and inverted
 using `not`.
 
@@ -79,22 +79,70 @@ This would match all recipes that take stone as an input.
 
 ### "result_item_is"
 
-This filter takes one item as a parameter and matches all recipes
-that can be used to create that item.
+This filter takes an item, array of items or item tag as a parameter and matches
+all recipes that can be used to create that item, or any item matching the tag.
 
-Example:
+Example 1:
 
 ```json5
 {
   "type": "result_item_is",
-  "item": {
-    "id": "minecraft:stone"
-  }
+  "items": "minecraft:stone"
 }
 ```
 
 This would match all recipes that create stone (i.e. smelting
 cobblestone in a furnace).
+
+Example 2:
+
+```json5
+{
+  "type": "result_item_is",
+  "items": "#minecraft:wool"
+}
+```
+
+This would match all recipes that create any type of wool.
+
+### "result_item_predicate"
+
+This filter matches a given item predicate against the result item
+of recipes.
+
+<details>
+<summary><b>Predicate syntax</b></summary>
+
+Predicates in Minecraft are JSON structures that check various conditions on objects
+such as entities, blocks, or in this case, items.
+
+An item predicate is an object consisting of the following fields, with **all fields
+being optional**.
+
+`"items"`: item id, #tag or array of ids. Checks if the item matches any of the listed values. <br>
+`"count"`: Checks the number of items in the stack. Either a single int value, or object with "min" and/or "max" value. <br>
+`"components"`: Checks if the components of the item stack match the given ones. <br>
+`"predicates"`: Matches [item sub-predicates (aka. data component predicates)](https://minecraft.wiki/w/Data_component_predicate).
+
+</details>
+
+
+Example:
+
+```json5
+{
+  "type": "result_item_predicate",
+  "predicate": {
+    "items": "#c:foods",
+    "count": {
+      "min": 3
+    }
+  }
+}
+```
+
+This would target all recipes that create a stack of at least 3 food items, e.g. the
+vanilla cookie recipe (which creates 8 cookies).
 
 ### "id_equals"
 
@@ -172,7 +220,7 @@ Example:
 }
 ```
 
-This would match all recipes that take stone as an input that are
+This would match all recipes that take stone as an input and are
 added by minecraft.
 
 ### "not"
