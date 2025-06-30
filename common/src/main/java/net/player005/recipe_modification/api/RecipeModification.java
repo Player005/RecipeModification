@@ -18,10 +18,7 @@ import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -300,6 +297,9 @@ public abstract class RecipeModification {
     private static void applyModifications() {
         var timer = Stopwatch.createStarted();
 
+        var recipeManagerMutable = CompletableFuture
+            .runAsync(() -> ((RecipeManagerAccessorTwo) recipeManager).recipeModification$makeMutable());
+
         var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             var result = recipeHolder.value().getResultItem(getRegistryAccess());
@@ -340,18 +340,13 @@ public abstract class RecipeModification {
             if (appliedOnRecipe > 0)
                 logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
 
-
-            ((RecipeManagerAccessorTwo) recipeManager).recipeModification$makeMutable();
-
-            for (ResourceLocation id : toRemove) {
-                if (recipeHolder.id().equals(id)) {
-                    // remove recipe from both maps stored in RecipeManager
-                    recipeManager.getRecipes().remove(recipeHolder); // remove from RecipeManager#byName
-                    recipeManager.getOrderedRecipes().remove(recipeHolder); // remove from RecipeManager#byType
-                }
-            }
             modified += appliedOnRecipe;
         }
+
+        recipeManagerMutable.join();
+        recipeManager.getRecipes().removeIf(r -> toRemove.contains(r.id()));
+        recipeManager.getOrderedRecipes().removeIf(r -> toRemove.contains(r.id()));
+
         logger.info("Modified {} recipes in {}", modified, timer);
     }
 }

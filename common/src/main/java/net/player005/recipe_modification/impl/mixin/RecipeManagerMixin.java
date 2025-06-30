@@ -1,7 +1,7 @@
 package net.player005.recipe_modification.impl.mixin;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.gson.JsonElement;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -35,7 +35,7 @@ public abstract class RecipeManagerMixin implements RecipeManagerAccessorTwo {
     @Unique
     @Override
     public void recipeModification$makeMutable() {
-        byType = HashMultimap.create(byType);
+        byType = MultimapBuilder.hashKeys().arrayListValues().build(byType);
         byName = new HashMap<>(byName);
     }
 
