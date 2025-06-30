@@ -14,8 +14,8 @@ dependencies {
     })
 
     // mixin extras is included by default in both fabric and neoforge (no additional dependency required)
-    compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
-    annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
+    compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
 
     compileOnly("net.fabricmc:sponge-mixin:0.15.3+mixin.0.8.7")
     modImplementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
