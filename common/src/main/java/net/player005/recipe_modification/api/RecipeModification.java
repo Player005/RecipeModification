@@ -19,7 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -44,7 +46,9 @@ public abstract class RecipeModification {
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
     private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
-    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers = ArrayListMultimap.create();
+    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers =
+        MultimapBuilder.hashKeys().arrayListValues().build();
+    private static final Map<Recipe<?>, ItemStack> resultItemOverrides = new IdentityHashMap<>();
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
 
@@ -72,12 +76,40 @@ public abstract class RecipeModification {
     }
 
     /**
-     * Registers a {@link ResultItemModifier} to be applied to the result item of the given recipe
+     * Registers a {@link ResultItemModifier} to be applied to the result item of The given recipe.
+     *
+     * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
+     * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
      */
-    public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
+    public static void modifyResultItem(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total",
-            findRecipeID(recipe), resultModifiers.size());
+    }
+
+    /**
+     * Modifies the result item of the given recipe.
+     *
+     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
+     */
+    public static void modifyResultItemSimple(Recipe<?> recipe, Consumer<ItemStack> modifier) {
+        var result = recipe.getResultItem(getRegistryAccess());
+        modifier.accept(result);
+        if (recipe.getResultItem(getRegistryAccess()) == result) return;
+
+        modifyResultItem(recipe, (recipe1, result1, recipeInput) -> {
+            modifier.accept(result1);
+            return result1;
+        });
+    }
+
+    /**
+     * Overrides the result item of the given recipe.
+     *
+     * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
+     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     */
+    public static void replaceResultItem(Recipe<?> recipe, ItemStack newResult) {
+        resultItemOverrides.put(recipe, newResult);
     }
 
     /**
@@ -239,14 +271,10 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
                                             @Nullable RecipeInput recipeInput) {
-        var i = 0;
-        for (var entry : resultModifiers.entries()) {
-            if (entry.getKey() != recipe) continue;
-            currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
-            i++;
+        currentResult = resultItemOverrides.getOrDefault(recipe, currentResult).copy();
+        for (var modifier : resultModifiers.get(recipe)) {
+            currentResult = modifier.getResultItem(recipe, currentResult, recipeInput);
         }
-
-        if (recipeInput != null && i > 0) logger.debug("Applied {} result item modifiers", i);
         return currentResult;
     }
 
