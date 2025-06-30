@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * This modifies the return value of {@link Recipe#assemble(RecipeInput, net.minecraft.core.HolderLookup.Provider)} in order for
  * result modifiers to work.
  */
-@Mixin({
+@Mixin(value = {
         AbstractCookingRecipe.class, ArmorDyeRecipe.class, BannerDuplicateRecipe.class,
         BookCloningRecipe.class, DecoratedPotRecipe.class,
         FireworkRocketRecipe.class, FireworkStarFadeRecipe.class, FireworkStarRecipe.class,
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         ShulkerBoxColoring.class, SingleItemRecipe.class,
         SmithingTransformRecipe.class, SmithingTrimRecipe.class, SuspiciousStewRecipe.class,
         TippedArrowRecipe.class
-})
+}, priority = 900)
 public class RecipeMixin2 {
 
     @SuppressWarnings("MixinAnnotationTarget")

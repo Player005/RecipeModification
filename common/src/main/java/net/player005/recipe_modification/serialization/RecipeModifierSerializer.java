@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
+import net.player005.recipe_modification.api.RecipeModification;
 import net.player005.recipe_modification.api.RecipeModifier;
 
 import java.util.HashMap;
@@ -58,6 +59,9 @@ public abstract class RecipeModifierSerializer {
             var function = LootItemFunctions.CODEC.parse(JsonOps.INSTANCE, object).getOrThrow().value();
             return RecipeModifier.modifyResultItem(itemStack -> function.apply(itemStack, null));
         });
+
+        registerDeserializer("remove_recipe", object -> (recipe, helper) ->
+            RecipeModification.removeRecipe(RecipeModification.findRecipeID(recipe)));
     }
 
     public static void registerDeserializer(String id, Function<JsonObject, RecipeModifier> deserializer) {

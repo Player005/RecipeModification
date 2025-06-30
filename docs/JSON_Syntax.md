@@ -286,9 +286,9 @@ This would match all recipes that are not from the Create mod.
 A recipe modifier is what actually applies the modifications to
 recipes.
 
-There are currently six types of recipe modifiers:
-`add_ingredient`, `remove_ingredient`, `replace_ingredient`,
-`add_alternative`, `modify_result_item` and `replace_result_item`.
+There are currently seven types of recipe modifiers:
+`add_ingredient`, `remove_ingredient`, `replace_ingredients`,
+`add_alternative`, `modify_result_item`, `replace_result_item` and `remove_recipe`.
 
 Mods can also define custom recipe modifiers in java code.
 
@@ -328,7 +328,7 @@ Example:
 
 This would remove all stone ingredients from the recipe.
 
-### "replace_ingredient"
+### "replace_ingredients"
 
 This modifier replaces selected ingredients with a new one.
 
@@ -336,7 +336,7 @@ Example:
 
 ```json5
 {
-  "type": "replace_ingredient",
+  "type": "replace_ingredients",
   "ingredient": "minecraft:stone", // ingredient selector
   "new_ingredient": {
     "id": "minecraft:dirt"
@@ -424,6 +424,10 @@ Example:
 ```
 
 This would replace the result of the recipe with dirt.
+
+### "remove_recipe"
+
+This modifier entirely removes recipes it's applied to from the game.
 
 ## Ingredient Selector Syntax
 

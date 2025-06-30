@@ -18,10 +18,7 @@
   },
   "modifiers": [
     {
-      "type": "add_ingredient",
-      "ingredient": {
-        "item": "minecraft:stone"
-      }
+      "type": "remove_recipe"
     }
   ]
 }

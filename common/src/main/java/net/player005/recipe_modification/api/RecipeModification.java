@@ -11,6 +11,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.player005.recipe_modification.impl.RecipeManagerAccessorTwo;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -20,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -29,7 +29,7 @@ import java.util.function.Consumer;
  * @see #registerModifier(RecipeModifierHolder)
  * @see #registerModifier(ResourceLocation, RecipeFilter, RecipeModifier...)
  * @see #removeRecipe(RecipeHolder)
- * @see #forAllRecipes(Consumer)
+ * @see #forAllRecipesAsync(Consumer)
  * @see #onRecipeInit(Consumer)
  */
 public abstract class RecipeModification {
@@ -40,8 +40,6 @@ public abstract class RecipeModification {
     private static Platform platform;
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
-    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks =
-        ArrayListMultimap.create();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
@@ -65,28 +63,12 @@ public abstract class RecipeModification {
     }
 
     /**
-     * The given lambda will be called once for EVERY loaded recipe matching the given filter,
-     * every time datapacks are reloaded.
-     * If this is called before recipe initialization, it will be executed when recipes are loaded.
-     * Otherwise, it will be executed immediately (but off-thread).
+     * The given lambda will be called once for EVERY loaded recipe, off-thread
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer, RecipeFilter filter) {
-        if (isInitialised())
-            CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
-        else recipeIterationCallbacks.put(filter, recipeConsumer);
-    }
-
-    /**
-     * The given lambda will be called once for EVERY loaded recipe, every time datapacks are reloaded.
-     * If this is called before recipe initialistion, it will be executed when recipes are loaded.
-     * Otherwise, it will be executed immediately (but off-thread).
-     *
-     * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
-     */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer) {
-        forAllRecipes(recipeConsumer, RecipeFilter.ALWAYS_APPLY);
+    public static CompletableFuture<Void> forAllRecipesAsync(Consumer<RecipeHolder<?>> recipeConsumer) {
+        return CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
     }
 
     /**
@@ -94,22 +76,36 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", findRecipeID(recipe),
-            resultModifiers.size());
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total",
+            findRecipeID(recipe), resultModifiers.size());
+    }
+
+    /**
+     * Finds the RecipeHolder of the given recipe. Try to avoid this method if possible,
+     * as it will iterate through all recipes every time it is called.
+     */
+    @UnknownNullability
+    public static RecipeHolder<?> findRecipeHolder(Recipe<?> recipe) {
+        for (RecipeHolder<?> recipeHolder : getRecipeManager().getRecipes()) {
+            if (recipeHolder.value().equals(recipe)) {
+                return recipeHolder;
+            }
+        }
+        return null;
     }
 
     /**
      * Finds the ResourceLocation of the given recipe. Try to avoid this method if possible,
      * as it will iterate through all recipes every time it is called.
      */
+    @UnknownNullability
     public static ResourceLocation findRecipeID(Recipe<?> recipe) {
-        AtomicReference<ResourceLocation> found = new AtomicReference<>();
-        forAllRecipes(recipeHolder -> {
+        for (RecipeHolder<?> recipeHolder : getRecipeManager().getRecipes()) {
             if (recipeHolder.value().equals(recipe)) {
-                found.set(recipeHolder.id());
+                return recipeHolder.id();
             }
-        });
-        return found.get();
+        }
+        return null;
     }
 
     /**
@@ -300,10 +296,6 @@ public abstract class RecipeModification {
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
 
-            for (final var entry : recipeIterationCallbacks.entries()) {
-                if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
-            }
-
             // apply recipeModifiers
             var appliedOnRecipe = 0;
             for (RecipeModifierHolder modifier : getAllModifiers()) {
@@ -321,6 +313,8 @@ public abstract class RecipeModification {
                 logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
 
 
+            ((RecipeManagerAccessorTwo) recipeManager).recipeModification$makeMutable();
+
             for (ResourceLocation id : toRemove) {
                 if (recipeHolder.id().equals(id)) {
                     // remove recipe from both maps stored in RecipeManager
@@ -331,6 +325,5 @@ public abstract class RecipeModification {
             modified += appliedOnRecipe;
         }
         logger.info("Modified {} recipes in {}", modified, timer);
-        recipeIterationCallbacks.clear();
     }
 }

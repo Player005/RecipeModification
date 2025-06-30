@@ -7,6 +7,7 @@
     "IngredientMixin",
     "NonNullListMixin",
     "RecipeManagerAccessor",
+    "RecipeManagerMixin",
     "RecipeMixin",
     "RecipeMixin2",
     "ReloadableServerResourcesMixin",
