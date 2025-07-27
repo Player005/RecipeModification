@@ -1,0 +1,10 @@
+{
+  "target_recipes": "#minecraft:buttons",
+  "modifiers": [
+    {
+      "type": "modify_result_item",
+      "function": "set_count",
+      "count": 8
+    }
+  ]
+}
