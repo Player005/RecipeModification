@@ -17,7 +17,7 @@ dependencies {
     compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
 
-    compileOnly("net.fabricmc:sponge-mixin:0.16.1+")
+    compileOnly("net.fabricmc:sponge-mixin:0.16.3+")
     modImplementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
 
     // add your dependencies here
