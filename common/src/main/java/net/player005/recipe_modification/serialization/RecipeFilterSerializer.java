@@ -46,6 +46,8 @@ public abstract class RecipeFilterSerializer {
 
     private static RecipeFilter fromString(String string) {
         if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
+        if (string.startsWith("#")) return RecipeFilter.resultItemIs(
+            TagKey.create(Registries.ITEM, ResourceLocation.parse(string.replace("#", ""))));
         if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
         if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
         var rl = ResourceLocation.tryParse(string);
