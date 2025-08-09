@@ -280,7 +280,7 @@ public abstract class RecipeModification {
 
             for (ResourceLocation id : toRemove) {
                 if (recipe.getId().equals(id)) {
-                    platform.removeRecipe(recipe.getId());
+                    platform.removeRecipe(((RecipeManagerAccessor) recipeManager), recipe.getId());
                 }
             }
             modified += appliedOnRecipe;

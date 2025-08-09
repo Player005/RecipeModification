@@ -4,6 +4,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 
 public interface Platform {
 
@@ -13,7 +14,7 @@ public interface Platform {
 
     RecipeHelper getHelper();
 
-    void removeRecipe(ResourceLocation id);
+    void removeRecipe(RecipeManagerAccessor recipeManager, ResourceLocation id);
 
     boolean isDevelopmentEnvironment();
 }
