@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -37,7 +38,8 @@ public abstract class RecipeModification {
     private static Platform platform;
 
     private static final List<Consumer<RecipeManager>> recipeManagerCallbacks = Lists.newArrayList();
-    private static final Multimap<RecipeFilter, Consumer<Recipe<?>>> recipeIterationCallbacks = ArrayListMultimap.create();
+    private static final Multimap<RecipeFilter, Consumer<Recipe<?>>> recipeIterationCallbacks =
+        ArrayListMultimap.create();
 
     private static final List<ResourceLocation> toRemove = Lists.newArrayList();
     private static final List<RecipeModifierHolder> modifiers = Lists.newArrayList();
@@ -90,7 +92,8 @@ public abstract class RecipeModification {
      */
     public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", recipe.getId(), resultModifiers.size());
+        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", recipe.getId(),
+            resultModifiers.size());
     }
 
     /**
@@ -213,11 +216,12 @@ public abstract class RecipeModification {
     private static void checkInitialised(String action) {
         if (!isInitialised())
             throw new IllegalStateException("Can't " + action + " before recipes are initialised." +
-                    "Maybe you need to use RecipeModification#onRecipeInit() ?");
+                "Maybe you need to use RecipeModification#onRecipeInit() ?");
     }
 
     @ApiStatus.Internal
-    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult, @Nullable Container recipeInput) {
+    public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
+                                            @Nullable Container recipeInput) {
         for (var entry : resultModifiers.entries()) {
             if (entry.getKey() != recipe) continue;
             currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
@@ -229,10 +233,9 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static void onRecipeManagerLoad(RecipeManager recipeManager) {
         RecipeModification.recipeManager = recipeManager;
-        if (modifiersFromDatapack == null) {
-            logger.error("Recipes loaded before recipe modifiers - recipe modifiers won't be applied");
-            return; // TODO: consider hard crash instead off error
-        }
+        if (modifiersFromDatapack == null)
+            throw new RuntimeException("Error loading Recipe Modification: Recipes were loaded before recipe " +
+                "modifiers were parsed");
         applyModifications();
     }
 
@@ -258,13 +261,13 @@ public abstract class RecipeModification {
         for (Consumer<RecipeManager> recipeManagerCallback : recipeManagerCallbacks) {
             recipeManagerCallback.accept(recipeManager);
         }
-        logger.debug("Executed {} recipe callbacks in {}", recipeManagerCallbacks.size(), timer);
+        logger.debug("Executed {} recipe manager callbacks in {}", recipeManagerCallbacks.size(), timer);
 
         timer.reset().start();
         var modified = 0;
 
         logger.info("Found {} recipe modifiers in datapacks, {} total",
-                modifiersFromDatapack.size(), getAllModifiers().size());
+            modifiersFromDatapack.size(), getAllModifiers().size());
 
         for (Recipe<?> recipe : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();

@@ -9,7 +9,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.player005.recipe_modification.api.Platform;
 import net.player005.recipe_modification.api.RecipeHelper;
-import net.player005.recipe_modification.api.RecipeModification;
 import net.player005.recipe_modification.impl.mixin.ItemValueAccessor;
 import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 import net.player005.recipe_modification.impl.mixin.TagValueAccessor;
@@ -43,8 +42,7 @@ public abstract class Platform_1_20_1 implements Platform {
     }
 
     @Override
-    public void removeRecipe(ResourceLocation id) {
-        var recipeManager = (RecipeManagerAccessor) RecipeModification.getRecipeManager();
+    public void removeRecipe(RecipeManagerAccessor recipeManager, ResourceLocation id) {
         recipeManager.getByName().remove(id);
         for (var map : recipeManager.getByType().values()) {
             map.remove(id);

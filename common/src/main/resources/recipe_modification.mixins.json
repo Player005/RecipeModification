@@ -8,7 +8,6 @@
     "ItemValueAccessor",
     "NonNullListMixin",
     "RecipeManagerAccessor",
-    "RecipeManagerMixin",
     "RecipeMixin",
     "RecipeMixin2",
     "ReloadableServerResourcesMixin",
