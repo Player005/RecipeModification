@@ -14,13 +14,6 @@ public interface RecipeModifier {
     void apply(Recipe<?> recipe, RecipeHelper helper);
 
     /**
-     * Removes all ingredients that match the given item.
-     */
-    static RecipeModifier removeAllIngredients(Item item) {
-        return removeIngredients(IngredientSelector.byItem(item));
-    }
-
-    /**
      * Tries to remove all ingredients that match the given selector.
      */
     static RecipeModifier removeIngredients(IngredientSelector selector) {
@@ -36,13 +29,6 @@ public interface RecipeModifier {
      */
     static RecipeModifier addIngredient(Ingredient ingredient) {
         return (recipe, helper) -> recipe.getIngredients().add(ingredient);
-    }
-
-    /**
-     * Removes the ingredient at the given index.
-     */
-    static RecipeModifier removeIngredient(int index) {
-        return (recipe, helper) -> recipe.getIngredients().remove(index);
     }
 
     /**
