@@ -7,8 +7,14 @@ plugins {
 dependencies {
     implementation(project.project(":common").sourceSets.getByName("main").output)
     annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:0.3.5")!!)
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     // Add neoforge-only dependencies here.
+}
+
+mixin {
+    add(sourceSets.main.get(), "recipe_modification.refmap.json")
+    config("recipe_modification.mixins.json")
 }
 
 legacyForge {
@@ -46,6 +52,9 @@ tasks {
         val main = project.project(":common").sourceSets.main.get()
         from(main.output.classesDirs)
         from(main.output.resourcesDir)
+        manifest.attributes(
+            "MixinConfigs" to "recipe_modification.mixins.json"
+        )
     }
 
     named("compileTestJava").configure {
