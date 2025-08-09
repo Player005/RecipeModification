@@ -5,17 +5,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.player005.recipe_modification.api.RecipeFilter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class RecipeFilterSerializer {
+
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
 
     public static RecipeFilter fromJson(JsonElement json) {
@@ -34,7 +36,18 @@ public abstract class RecipeFilterSerializer {
     }
 
     private static RecipeFilter fromString(String string) {
-        return RecipeFilter.idEquals(Objects.requireNonNull(ResourceLocation.tryParse(string)));
+        if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
+        if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
+        if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
+
+        var rl = ResourceLocation.tryParse(string.replace("#", ""));
+        if (rl == null)
+            throw new RecipeModifierParsingException("Invalid resource location in shorthand recipe filter: " + string);
+
+        if (string.startsWith("#")) return RecipeFilter.resultItemIs(TagKey.create(Registries.ITEM, rl));
+        if (BuiltInRegistries.ITEM.containsKey(rl))
+            return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl));
+        return RecipeFilter.idEquals(rl);
     }
 
     static {
@@ -52,7 +65,8 @@ public abstract class RecipeFilterSerializer {
         registerSerializer("id_equals", (json) -> {
             var id = ResourceLocation.tryParse(json.get("id").getAsString());
             if (id == null)
-                throw new RecipeModifierParsingException("Invalid recipe filter: Invalid id: \"" + json.get("id") + "\"");
+                throw new RecipeModifierParsingException("Invalid recipe filter: Invalid id: \"" + json.get("id") +
+                    "\"");
             return RecipeFilter.idEquals(id);
         });
         registerSerializer("namespace_equals", (json) -> {
