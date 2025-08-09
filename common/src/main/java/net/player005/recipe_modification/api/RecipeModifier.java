@@ -6,6 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @FunctionalInterface
@@ -75,17 +76,27 @@ public interface RecipeModifier {
         };
     }
 
-    static RecipeModifier modifyResultItem(Function<ItemStack, ItemStack> modifier) {
-        return (recipe, helper) -> RecipeModification.registerRecipeResultModifier(recipe, (recipe1, result, recipeInput) -> modifier.apply(result));
+    /**
+     * Replaces the result item of the recipe.
+     * @param modifier Function that takes the old result item and returns the new result item
+     */
+    static RecipeModifier replaceResultItem(Function<ItemStack, ItemStack> modifier) {
+        return (recipe, helper) -> RecipeModification.modifyResultItem(recipe,
+            (result, recipeInput) -> modifier.apply(result));
     }
 
+    /**
+     * Replaces the result item of the recipe.
+     */
     static RecipeModifier replaceResultItem(ItemStack newResult) {
-        return modifyResultItem(stack -> newResult);
+        return (recipe, helper) -> RecipeModification.replaceResultItem(recipe, newResult);
     }
 
-//    LootContext EMPTY_LOOT_CONTEXT = new LootContext.Builder(new LootParams.Builder(null).create(LootContextParamSets.EMPTY)).create(ResourceLocation.tryParse("recipe_modification:empty"));
-//    static RecipeModifier modifyResultItem(LootItemFunction function) {
-//        return modifyResultItem(stack -> function.apply(stack, EMPTY_LOOT_CONTEXT));
-//    } TODO
-
+    /**
+     * Can be used to modify the result item of the recipe.
+     * @param itemStackModifier A consumer that takes an item stack, and applies the modifications to it.
+     */
+    static RecipeModifier modifyResultItem(Consumer<ItemStack> itemStackModifier) {
+        return (recipe, helper) -> RecipeModification.modifyResultItemSimple(recipe, itemStackModifier);
+    }
 }

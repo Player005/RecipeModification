@@ -2,6 +2,7 @@ package net.player005.recipe_modification.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -17,7 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -27,7 +30,7 @@ import java.util.function.Consumer;
  * @see #registerModifier(RecipeModifierHolder)
  * @see #registerModifier(ResourceLocation, RecipeFilter, RecipeModifier...)
  * @see #removeRecipe(ResourceLocation)
- * @see #forAllRecipes(Consumer)
+ * @see #forAllRecipesAsync(Consumer)
  * @see #onRecipeInit(Consumer)
  */
 public abstract class RecipeModification {
@@ -37,14 +40,14 @@ public abstract class RecipeModification {
     @SuppressWarnings("NotNullFieldNotInitialized")
     private static Platform platform;
 
-    private static final List<Consumer<RecipeManager>> recipeManagerCallbacks = Lists.newArrayList();
-    private static final Multimap<RecipeFilter, Consumer<Recipe<?>>> recipeIterationCallbacks =
-        ArrayListMultimap.create();
+    private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
 
-    private static final List<ResourceLocation> toRemove = Lists.newArrayList();
-    private static final List<RecipeModifierHolder> modifiers = Lists.newArrayList();
+    private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
+    private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
     private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
-    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers = ArrayListMultimap.create();
+    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers =
+        MultimapBuilder.hashKeys().arrayListValues().build();
+    private static final Map<Recipe<?>, ItemStack> resultItemOverrides = new IdentityHashMap<>();
 
     private static @UnknownNullability ImmutableMultimap<Item, Recipe<?>> recipesByResult;
 
@@ -63,37 +66,49 @@ public abstract class RecipeModification {
     }
 
     /**
-     * The given lambda will be called once for EVERY loaded recipe matching the given filter,
-     * every time datapacks are reloaded.
-     * If this is called before recipe initialization, it will be executed when recipes are loaded.
-     * Otherwise, it will be executed immediately (but off-thread).
+     * The given lambda will be called once for EVERY loaded recipe, off-thread
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
-    public static void forAllRecipes(Consumer<Recipe<?>> recipeConsumer, RecipeFilter filter) {
-        if (isInitialised())
-            CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
-        else recipeIterationCallbacks.put(filter, recipeConsumer);
+    public static CompletableFuture<Void> forAllRecipesAsync(Consumer<Recipe<?>> recipeConsumer) {
+        return CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
     }
 
     /**
-     * The given lambda will be called once for EVERY loaded recipe, every time datapacks are reloaded.
-     * If this is called before recipe initialistion, it will be executed when recipes are loaded.
-     * Otherwise, it will be executed immediately (but off-thread).
+     * Registers a {@link ResultItemModifier} to be applied to the result item of The given recipe.
      *
-     * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
+     * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
+     * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
      */
-    public static void forAllRecipes(Consumer<Recipe<?>> recipeConsumer) {
-        forAllRecipes(recipeConsumer, RecipeFilter.ALWAYS_APPLY);
-    }
-
-    /**
-     * Registers a {@link ResultItemModifier} to be applied to the result item of the given recipe
-     */
-    public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
+    public static void modifyResultItem(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total", recipe.getId(),
-            resultModifiers.size());
+    }
+
+    /**
+     * Modifies the result item of the given recipe.
+     *
+     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
+     */
+    public static void modifyResultItemSimple(Recipe<?> recipe, Consumer<ItemStack> modifier) {
+        var result = recipe.getResultItem(getRegistryAccess());
+        modifier.accept(result);
+        if (recipe.getResultItem(getRegistryAccess()) == result) return;
+
+        modifyResultItem(recipe, (result1, recipeInput) -> {
+            modifier.accept(result1);
+            return result1;
+        });
+    }
+
+    /**
+     * Overrides the result item of the given recipe.
+     *
+     * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
+     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     */
+    public static void replaceResultItem(Recipe<?> recipe, ItemStack newResult) {
+        resultItemOverrides.put(recipe, newResult);
     }
 
     /**
@@ -222,9 +237,9 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
                                             @Nullable Container recipeInput) {
-        for (var entry : resultModifiers.entries()) {
-            if (entry.getKey() != recipe) continue;
-            currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
+        currentResult = resultItemOverrides.getOrDefault(recipe, currentResult).copy();
+        for (var modifier : resultModifiers.get(recipe)) {
+            currentResult = modifier.getResultItem(currentResult, recipeInput);
         }
 
         return currentResult;
@@ -234,7 +249,7 @@ public abstract class RecipeModification {
     public static void onRecipeManagerLoad(RecipeManager recipeManager) {
         RecipeModification.recipeManager = recipeManager;
         if (modifiersFromDatapack == null)
-            throw new RuntimeException("Error loading Recipe Modification: Recipes were loaded before recipe " +
+            throw new IllegalStateException("Error loading Recipe Modification: Recipes were loaded before recipe " +
                 "modifiers were parsed");
         applyModifications();
     }
@@ -272,10 +287,6 @@ public abstract class RecipeModification {
         for (Recipe<?> recipe : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
 
-            for (final var entry : recipeIterationCallbacks.entries()) {
-                if (entry.getKey().shouldApply(recipe, registryAccess)) entry.getValue().accept(recipe);
-            }
-
             var appliedOnRecipe = applyAllModifiers(recipe, registryAccess);
 
             if (appliedOnRecipe > 0)
@@ -290,7 +301,6 @@ public abstract class RecipeModification {
         }
 
         logger.info("Modified {} recipes in {}", modified, timer);
-        recipeIterationCallbacks.clear();
     }
 
     private static int applyAllModifiers(Recipe<?> recipe, RegistryAccess registryAccess) {

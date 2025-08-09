@@ -5,13 +5,19 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.player005.recipe_modification.api.RecipeModification;
 import net.player005.recipe_modification.api.RecipeModifier;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static net.player005.recipe_modification.api.RecipeModification.getPlatform;
+
 public abstract class RecipeModifierSerializer {
+
     private static final Map<String, Function<JsonObject, RecipeModifier>> deserializers = new HashMap<>();
 
     public static RecipeModifier fromJson(JsonElement json) {
@@ -50,15 +56,19 @@ public abstract class RecipeModifierSerializer {
 
         registerDeserializer("replace_result_item", object -> {
             var newResult = ItemStack.CODEC.parse(JsonOps.INSTANCE, object.get("new_result"))
-                    .getOrThrow(true, err -> {
-                        throw new RecipeModifierParsingException("Invalid new result: " + err);
-                    });
+                .getOrThrow(true, err -> {
+                    throw new RecipeModifierParsingException("Invalid new result: " + err);
+                });
             return RecipeModifier.replaceResultItem(newResult);
         });
 
-//        registerDeserializer("modify_result", object -> { TODO: result modifiers
-//            var function = LootItemFunctionType
-//        });
+        registerDeserializer("modify_result_item", object -> {
+            LootItemFunction function = getPlatform().parseLootDataType(LootDataType.MODIFIER, object);
+            return RecipeModifier.modifyResultItem(itemStack -> function.apply(itemStack, null));
+        });
+
+        registerDeserializer("remove_recipe", object -> (recipe, helper) ->
+            RecipeModification.removeRecipe(recipe.getId()));
     }
 
     public static void registerDeserializer(String id, Function<JsonObject, RecipeModifier> deserializer) {
