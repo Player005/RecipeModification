@@ -35,7 +35,7 @@ public abstract class RecipeDisplayMixin implements RecipeDisplayAccessor {
     }
 
     /**
-     * A reference to the parent display, which is set in {@link RecipeMixin1#modifyDisplay(CallbackInfoReturnable)}.
+     * A reference to the parent recipe, which is set in {@link RecipeMixin1#modifyDisplay(CallbackInfoReturnable)}.
      * This is required to know which recipe's result modifiers to apply.
      */
     @Unique
