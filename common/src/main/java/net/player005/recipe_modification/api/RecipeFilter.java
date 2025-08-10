@@ -49,7 +49,7 @@ public interface RecipeFilter {
      */
     static RecipeFilter resultItemIs(Item item) {
         return (recipe, registryAccess) -> {
-            var resultItem = Util.getResultItem(recipe);
+            var resultItem = RecipeModification.getResultItem(recipe);
             return resultItem != null && resultItem.is(item);
         };
     }
@@ -59,7 +59,7 @@ public interface RecipeFilter {
      */
     static RecipeFilter resultItemIs(TagKey<Item> itemTag) {
         return (recipe, registryAccess) -> {
-            var resultItem = Util.getResultItem(recipe);
+            var resultItem = RecipeModification.getResultItem(recipe);
             return resultItem != null && resultItem.is(itemTag);
         };
     }

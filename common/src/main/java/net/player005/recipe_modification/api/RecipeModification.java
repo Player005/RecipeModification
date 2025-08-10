@@ -327,7 +327,7 @@ public abstract class RecipeModification {
     private static ImmutableMultimap<Item, RecipeHolder<?>> buildRecipeResultMap() {
         var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
         for (RecipeHolder<?> recipe : recipeManager.getRecipes()) {
-            var result = Util.getResultItem(recipe);
+            var result = getResultItem(recipe);
             if (result == null) continue;
             byResultBuilder.put(result.getItem(), recipe);
         }
@@ -342,5 +342,18 @@ public abstract class RecipeModification {
             logger.warn("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipe.id());
             logger.debug("Exception:", e);
         }
+    }
+
+    public static @Nullable ItemStack getResultItem(Recipe<?> recipe) {
+        if (recipe.display().isEmpty())
+            return null;
+
+        return recipe.display().getFirst().result().resolveForFirstStack(
+            new ContextMap.Builder().create(new ContextKeySet.Builder().build())
+        );
+    }
+
+    public static @Nullable ItemStack getResultItem(RecipeHolder<?> recipeHolder) {
+        return getResultItem(recipeHolder.value());
     }
 }
