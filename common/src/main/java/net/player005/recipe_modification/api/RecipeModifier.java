@@ -1,6 +1,5 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -96,14 +95,15 @@ public interface RecipeModifier {
      * @param modifier Function that takes the old result item and returns the new result item
      */
     static RecipeModifier replaceResultItem(Function<ItemStack, ItemStack> modifier) {
-        return (recipe, helper) -> RecipeModification.registerRecipeResultModifier(recipe, (recipe1, result, recipeInput) -> modifier.apply(result));
+        return (recipe, helper) -> RecipeModification.modifyResultItem(recipe,
+            (recipe1, result, recipeInput) -> modifier.apply(result));
     }
 
     /**
      * Replaces the result item of the recipe.
      */
     static RecipeModifier replaceResultItem(ItemStack newResult) {
-        return replaceResultItem(stack -> newResult.copy());
+        return (recipe, helper) -> RecipeModification.replaceResultItem(recipe, newResult);
     }
 
     /**
@@ -111,16 +111,6 @@ public interface RecipeModifier {
      * @param itemStackModifier A consumer that takes an item stack, and applies the modifications to it.
      */
     static RecipeModifier modifyResultItem(Consumer<ItemStack> itemStackModifier) {
-        return replaceResultItem(itemStack -> {
-            itemStackModifier.accept(itemStack);
-            return itemStack;
-        });
-    }
-
-    /**
-     * Applies the given {@link DataComponentPatch} to the result item of the recipe.
-     */
-    static RecipeModifier modifyResultComponents(DataComponentPatch patch) {
-        return modifyResultItem(itemStack -> itemStack.applyComponents(patch));
+        return (recipe, helper) -> RecipeModification.modifyResultItemSimple(recipe, itemStackModifier);
     }
 }

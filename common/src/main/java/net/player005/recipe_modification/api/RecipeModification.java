@@ -5,13 +5,11 @@ import com.google.common.collect.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextKeySet;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
+import net.minecraft.world.item.crafting.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
@@ -19,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -29,7 +29,7 @@ import java.util.function.Consumer;
  * @see #registerModifier(RecipeModifierHolder)
  * @see #registerModifier(ResourceLocation, RecipeFilter, RecipeModifier...)
  * @see #removeRecipe(RecipeHolder)
- * @see #forAllRecipes(Consumer)
+ * @see #forAllRecipesAsync(Consumer)
  * @see #onRecipeInit(Consumer)
  */
 public abstract class RecipeModification {
@@ -44,7 +44,9 @@ public abstract class RecipeModification {
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
     private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
-    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers = ArrayListMultimap.create();
+    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers =
+        MultimapBuilder.hashKeys().arrayListValues().build();
+    private static final Map<Recipe<?>, ItemStack> resultItemOverrides = new IdentityHashMap<>();
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
 
@@ -73,21 +75,56 @@ public abstract class RecipeModification {
     }
 
     /**
-     * Registers a {@link ResultItemModifier} to be applied to the result item of the given recipe
+     * Registers a {@link ResultItemModifier} to be applied to the result item of The given recipe.
+     *
+     * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
+     * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
      */
-    public static void registerRecipeResultModifier(Recipe<?> recipe, ResultItemModifier modifier) {
+    public static void modifyResultItem(Recipe<?> recipe, ResultItemModifier modifier) {
         resultModifiers.put(recipe, modifier);
-        logger.debug("Registered result item modifier for recipe {}, now {} modifiers total",
-            findRecipeHolder(recipe).id().location(), resultModifiers.size());
+    }
+
+    /**
+     * Modifies the result item of the given recipe.
+     *
+     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
+     */
+    public static void modifyResultItemSimple(Recipe<?> recipe, Consumer<ItemStack> modifier) {
+        var result = getResultItem(recipe);
+        if (result == null) return;
+        modifier.accept(result);
+
+        if (result.equals(getResultItem(recipe))) return;
+
+        modifyResultItem(recipe, (recipe1, result1, recipeInput) -> {
+            modifier.accept(result1);
+            return result1;
+        });
+    }
+
+    /**
+     * Overrides the result item of the given recipe.
+     *
+     * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
+     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     */
+    public static void replaceResultItem(Recipe<?> recipe, ItemStack newResult) {
+        resultItemOverrides.put(recipe, newResult);
     }
 
     /**
      * Finds the RecipeHolder of the given recipe. Try to avoid this method if possible,
      * as it will iterate through all recipes every time it is called.
      */
-    public static @UnknownNullability RecipeHolder<?> findRecipeHolder(Recipe<?> recipe) {
-        return ((RecipeManagerAccessor) getRecipeManager()).getRecipes().values().stream()
-            .filter(r -> r.value() == recipe).findAny().orElse(null);
+    @UnknownNullability
+    public static RecipeHolder<?> findRecipeHolder(Recipe<?> recipe) {
+        for (RecipeHolder<?> recipeHolder : getRecipeManager().getRecipes()) {
+            if (recipeHolder.value().equals(recipe)) {
+                return recipeHolder;
+            }
+        }
+        return null;
     }
 
     /**
@@ -221,14 +258,10 @@ public abstract class RecipeModification {
     @ApiStatus.Internal
     public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
                                             @Nullable RecipeInput recipeInput) {
-        var i = 0;
-        for (var entry : resultModifiers.entries()) {
-            if (entry.getKey() != recipe) continue;
-            currentResult = entry.getValue().getResultItem(recipe, currentResult, recipeInput);
-            i++;
+        currentResult = resultItemOverrides.getOrDefault(recipe, currentResult).copy();
+        for (var modifier : resultModifiers.get(recipe)) {
+            currentResult = modifier.getResultItem(recipe, currentResult, recipeInput);
         }
-
-        if (recipeInput != null && i > 0) logger.debug("Applied {} result item modifiers", i);
         return currentResult;
     }
 

@@ -5,7 +5,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
@@ -41,14 +43,15 @@ public abstract class RecipeFilterSerializer {
 
     private static RecipeFilter fromString(String string) {
         if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
+        if (string.startsWith("#")) return RecipeFilter.resultItemIs(
+            TagKey.create(Registries.ITEM, ResourceLocation.parse(string.replace("#", ""))));
         if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
         if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
         var rl = ResourceLocation.tryParse(string);
         if (rl == null)
             throw new RecipeModifierParsingException("Invalid resource location in shorthand recipe filter: " + string);
         if (BuiltInRegistries.ITEM.containsKey(rl))
-            //noinspection OptionalGetWithoutIsPresent
-            return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl).get().value());
+            return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl).orElseThrow().value());
         return RecipeFilter.idEquals(ResourceLocation.parse(string));
     }
 
