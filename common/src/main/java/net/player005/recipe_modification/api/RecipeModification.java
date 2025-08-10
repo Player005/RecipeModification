@@ -40,8 +40,6 @@ public abstract class RecipeModification {
     private static Platform platform;
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
-    private static final Multimap<RecipeFilter, Consumer<RecipeHolder<?>>> recipeIterationCallbacks =
-        ArrayListMultimap.create();
 
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
@@ -66,28 +64,12 @@ public abstract class RecipeModification {
     }
 
     /**
-     * The given lambda will be called once for EVERY loaded recipe matching the given filter,
-     * every time datapacks are reloaded.
-     * If this is called before recipe initialization, it will be executed when recipes are loaded.
-     * Otherwise, it will be executed immediately (but off-thread).
+     * The given lambda will be called once for EVERY loaded recipe, off-thread
      *
      * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
      */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer, RecipeFilter filter) {
-        if (isInitialised())
-            CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
-        else recipeIterationCallbacks.put(filter, recipeConsumer);
-    }
-
-    /**
-     * The given lambda will be called once for EVERY loaded recipe, every time datapacks are reloaded.
-     * If this is called before recipe initialistion, it will be executed when recipes are loaded.
-     * Otherwise, it will be executed immediately (but off-thread).
-     *
-     * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
-     */
-    public static void forAllRecipes(Consumer<RecipeHolder<?>> recipeConsumer) {
-        forAllRecipes(recipeConsumer, RecipeFilter.ALWAYS_APPLY);
+    public static CompletableFuture<Void> forAllRecipesAsync(Consumer<RecipeHolder<?>> recipeConsumer) {
+        return CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
     }
 
     /**
@@ -295,10 +277,6 @@ public abstract class RecipeModification {
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             final var registryAccess = getRegistryAccess();
 
-            for (final var entry : recipeIterationCallbacks.entries()) {
-                if (entry.getKey().shouldApply(recipeHolder, registryAccess)) entry.getValue().accept(recipeHolder);
-            }
-
             applyAllModifiers(recipeHolder, registryAccess);
 
             for (ResourceLocation id : toRemove) {
@@ -309,7 +287,6 @@ public abstract class RecipeModification {
         }
 
         logger.info("Applied {} recipe modifiers in {}", getAllModifiers().size(), timer);
-        recipeIterationCallbacks.clear();
     }
 
     private static void applyAllModifiers(RecipeHolder<?> recipe, HolderLookup.Provider registryAccess) {
