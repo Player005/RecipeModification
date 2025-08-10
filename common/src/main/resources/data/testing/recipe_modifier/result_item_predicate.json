@@ -1,0 +1,18 @@
+{
+  "target_recipes": {
+    "type": "result_item_predicate",
+    "predicate": {
+      "tag": "minecraft:walls",
+      "count": {
+        "min": 3
+      }
+    }
+  },
+  "modifiers": [
+    {
+      "type": "modify_result_item",
+      "function": "set_count",
+      "count": 2
+    }
+  ]
+}

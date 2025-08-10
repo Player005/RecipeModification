@@ -1,11 +1,13 @@
 package net.player005.recipe_modification.api;
 
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeType;
 
 /**
  * A simple functional interface to filter recipes.
@@ -57,6 +59,16 @@ public interface RecipeFilter {
         return (recipe, registryAccess) -> recipe.getResultItem(registryAccess).is(itemTag);
     }
 
+    static RecipeFilter resultItemMatches(ItemPredicate predicate) {
+        return (recipe, registryAccess) -> {
+            if (predicate.matches(recipe.getResultItem(registryAccess))) {
+                System.out.println("MATCH! recipe: " + recipe.getId());
+                return true;
+            }
+            return false;
+        };
+    }
+
     /**
      * Returns a recipe filter that filters for the recipe with the given id.
      */
@@ -69,6 +81,13 @@ public interface RecipeFilter {
      */
     static RecipeFilter namespaceEquals(String group) {
         return (recipe, registryAccess) -> recipe.getId().getNamespace().equals(group);
+    }
+
+    /**
+     * Returns a recipe filter that filters for recipes of the given type.
+     */
+    static RecipeFilter isType(RecipeType<?> recipeType) {
+        return (recipe, registryAccess) -> recipe.getType().equals(recipeType);
     }
 
     /**
@@ -97,5 +116,4 @@ public interface RecipeFilter {
     static RecipeFilter not(RecipeFilter filter) {
         return (recipe, registryAccess) -> !filter.shouldApply(recipe, registryAccess);
     }
-
 }

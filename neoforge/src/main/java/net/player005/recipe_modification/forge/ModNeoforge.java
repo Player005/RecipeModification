@@ -25,6 +25,7 @@ public class ModNeoforge {
                 return !FMLLoader.isProduction();
             }
 
+            @SuppressWarnings("DataFlowIssue")
             @Override
             public <T> T parseLootDataType(@NotNull LootDataType<T> lootDataType, @NotNull JsonElement element) {
                 return lootDataType.deserialize(null, element, ResourceManager.Empty.INSTANCE).orElseThrow();
