@@ -1,5 +1,8 @@
 # Defining Recipe Modifiers
 
+This document explains how to define recipe modifiers in JSON for other mods or datapacks.
+If you want to look at more examples, see [the testing modifiers](https://github.com/Player005/RecipeModification/tree/1.21.1/main/common/src/main/resources/data/testing/recipe_modifier).
+
 ## Contents
 
 - [General Syntax](#general-syntax)
@@ -21,7 +24,7 @@ The structure of them looks like this:
 {
   "target_recipes": {
     // recipe filter definition, for example:
-    "type": "all_ingredients"
+    "type": "all_recipes"
   },
   "modifiers": [
     // list of recipe modifiers
