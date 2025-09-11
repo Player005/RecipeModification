@@ -9,9 +9,9 @@
   "modifiers": [
     {
       "type": "modify_result_item",
-      "function": "set_components",
-      "components": {
-        "item_name": "{\"text\": \"New Name\"}"
+      "function": "set_name",
+      "name": {
+        "text": "New Name"
       }
     }
   ]

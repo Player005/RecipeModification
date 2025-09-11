@@ -1,13 +1,16 @@
 package net.player005.recipe_modification.serialization;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
@@ -44,7 +47,7 @@ public abstract class RecipeFilterSerializer {
     private static RecipeFilter fromString(String string) {
         if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
         if (string.startsWith("#")) return RecipeFilter.resultItemIs(
-            TagKey.create(Registries.ITEM, ResourceLocation.parse(string.replace("#", ""))));
+            TagKey.create(Registries.ITEM, ResourceLocation.parse(string.replaceFirst("#", ""))));
         if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
         if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
         var rl = ResourceLocation.tryParse(string);
@@ -61,10 +64,19 @@ public abstract class RecipeFilterSerializer {
             var item = ItemStack.CODEC.parse(JsonOps.INSTANCE, json.get("item")).getOrThrow();
             return RecipeFilter.acceptsIngredient(item);
         });
-        registerSerializer("result_item_is", (json) -> {
-            var item =
-                BuiltInRegistries.ITEM.get(ResourceLocation.parse(json.get("item").getAsString())).orElseThrow().value();
-            return RecipeFilter.resultItemIs(item);
+        registerSerializer("result_item_is", json -> createFilterByResultItem(json.get("item")));
+        registerSerializer("result_item_predicate", (json) -> {
+            RecipeFilter itemFilter = null;
+            json = json.get("predicate").getAsJsonObject();
+
+            if (json.has("items")) {
+                itemFilter = createFilterByResultItem(json.remove("items"));
+            }
+
+            var predicate = ItemPredicate.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+            return itemFilter == null ?
+                RecipeFilter.resultItemMatches(predicate) :
+                RecipeFilter.and(itemFilter, RecipeFilter.resultItemMatches(predicate));
         });
         registerSerializer("id_equals", (json) -> {
             var id = ResourceLocation.parse(json.get("id").getAsString());
@@ -101,6 +113,27 @@ public abstract class RecipeFilterSerializer {
                 throw new RecipeModifierParsingException("Unknown recipe type: " + json.get("recipe_type").getAsString());
             return RecipeFilter.isType(type);
         });
+    }
+
+    private static RecipeFilter createFilterByResultItem(JsonElement json) {
+        if (json instanceof JsonArray array) {
+            Item[] items = array.asList().stream().map(jsonElement ->
+                BuiltInRegistries.ITEM.get(ResourceLocation.parse(jsonElement.getAsString()))).toArray(Item[]::new);
+            return RecipeFilter.resultItemIs(items);
+        }
+
+        if (!(json instanceof JsonPrimitive primitive && primitive.isString()))
+            throw new RecipeModifierParsingException("invalid result item recipe filter: must be either string or " +
+                "array of strings: " + json);
+
+        var str = json.getAsString();
+        if (str.startsWith("#")) {
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, ResourceLocation.parse(str.replace("#", "")));
+            return RecipeFilter.resultItemIs(itemTag);
+        }
+
+        var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(str));
+        return RecipeFilter.resultItemIs(item.orElseThrow().value());
     }
 
     public static void registerSerializer(String name, Function<JsonObject, RecipeFilter> deserializer) {
