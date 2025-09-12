@@ -1,5 +1,3 @@
-import net.neoforged.moddevgradle.dsl.RunModel
-
 plugins {
     id("net.neoforged.moddev") version "2.0.99"
 }
