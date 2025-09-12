@@ -42,8 +42,8 @@ jobs:
           curseforge-id: 1345325
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: |
-            build/libs_neoforge/!(*-@(dev|sources|javadoc)).jar
-            build/libs_neoforge/*-@(dev|sources|javadocs).jar
+            build/libs_forge/!(*-@(dev|sources|javadoc)).jar
+            build/libs_forge/*-@(dev|sources|javadocs).jar
 
           version-type: release
           loaders: neoforge
