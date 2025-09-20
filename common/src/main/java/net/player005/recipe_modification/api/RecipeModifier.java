@@ -81,8 +81,11 @@ public interface RecipeModifier {
      * @param modifier Function that takes the old result item and returns the new result item
      */
     static RecipeModifier replaceResultItem(Function<ItemStack, ItemStack> modifier) {
-        return (recipe, helper) -> RecipeModification.modifyResultItem(recipe,
-            (result, recipeInput) -> modifier.apply(result));
+        return (recipe, helper) -> RecipeModification.registerGlobalResultModifier(
+            (recipe1, result, recipeInput) -> {
+                if (recipe1 == recipe) return modifier.apply(result);
+                else return result;
+            });
     }
 
     /**
