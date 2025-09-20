@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 import net.fabricmc.loom.task.RemapJarTask
+import net.fabricmc.loom.task.RemapSourcesJarTask
 
 plugins {
     id("fabric-loom") version "1.10-SNAPSHOT"
@@ -62,10 +63,10 @@ tasks {
     }
 
     // put all artifacts in the right directory
-    withType<Jar> {
+    withType<RemapJarTask> {
         destinationDirectory = rootDir.resolve("build").resolve("libs_fabric")
     }
-    withType<RemapJarTask> {
+    withType<RemapSourcesJarTask> {
         destinationDirectory = rootDir.resolve("build").resolve("libs_fabric")
     }
 

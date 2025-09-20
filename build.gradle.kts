@@ -48,7 +48,11 @@ subprojects {
         }
     }
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(rootProject.properties["java_version"].toString())
+    java {
+        toolchain.languageVersion = JavaLanguageVersion.of(rootProject.properties["java_version"].toString())
+
+        withSourcesJar()
+    }
 
     tasks {
         withType<JavaCompile> {
@@ -59,12 +63,12 @@ subprojects {
             enabled = false
         }
 
-        jar {
+        withType<Jar> {
             // put all built jars in the correct directory
             destinationDirectory = rootDir.resolve("build").resolve("libs_${project.name}")
 
             // add license file to jars
-            from(rootDir.resolve("LICENSE.md"))
+            from(rootDir.resolve("LICENSE.MD"))
 
             // required because apparently some classes are duplicated
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
