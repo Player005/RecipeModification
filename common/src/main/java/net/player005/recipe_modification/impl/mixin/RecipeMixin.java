@@ -10,11 +10,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = {
-        AbstractCookingRecipe.class, CustomRecipe.class,
-        FireworkRocketRecipe.class, FireworkStarRecipe.class,
-        ShapedRecipe.class, ShapelessRecipe.class,
-        SingleItemRecipe.class,
-        SmithingTransformRecipe.class, SmithingTrimRecipe.class,
+    AbstractCookingRecipe.class, CustomRecipe.class,
+    FireworkRocketRecipe.class, FireworkStarRecipe.class,
+    ShapedRecipe.class, ShapelessRecipe.class,
+    SingleItemRecipe.class,
+    SmithingTransformRecipe.class, SmithingTrimRecipe.class,
 }, priority = 900)
 public abstract class RecipeMixin {
 
