@@ -47,6 +47,10 @@ loom {
         }
     }
 
+    mixin {
+        useLegacyMixinAp = false
+    }
+
     // include access wideners from common
     accessWidenerPath = project(":common").loom.accessWidenerPath
 }
