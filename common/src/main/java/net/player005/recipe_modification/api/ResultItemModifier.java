@@ -5,10 +5,13 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeInput;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
+
 /**
  * A functional interface to modify the result item of a recipe.
  *
- * @see RecipeModification#registerRecipeResultModifier(Recipe, ResultItemModifier)
+ * @see RecipeModification#registerGlobalResultModifier(ResultItemModifier)
+ * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
  * @see #getResultItem(Recipe, ItemStack, RecipeInput)
  */
 @FunctionalInterface

@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * The central class for recipe modifications, containing some utility methods.
@@ -43,8 +44,7 @@ public abstract class RecipeModification {
     private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
     private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
-    public static final Multimap<Recipe<?>, ResultItemModifier> resultModifiers =
-        MultimapBuilder.hashKeys().arrayListValues().build();
+    public static final List<ResultItemModifier> resultModifiers = NonNullList.create();
     private static final Map<Recipe<?>, ItemStack> resultItemOverrides = new IdentityHashMap<>();
 
     private static @UnknownNullability ImmutableMultimap<Item, RecipeHolder<?>> recipesByResult;
@@ -66,35 +66,36 @@ public abstract class RecipeModification {
     /**
      * The given lambda will be called once for EVERY loaded recipe, off-thread
      *
-     * @apiNote The given consumer might be executed asynchronously i.e. not on the main thread.
+     * @apiNote The given consumer might be executed asynchronously
      */
     public static CompletableFuture<Void> forAllRecipesAsync(Consumer<RecipeHolder<?>> recipeConsumer) {
         return CompletableFuture.runAsync(() -> recipeManager.getRecipes().forEach(recipeConsumer));
     }
 
     /**
-     * Registers a {@link ResultItemModifier} to be applied to the result item of The given recipe.
+     * Registers a {@link ResultItemModifier} to be applied to all recipes.
      *
      * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
      * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
      */
-    public static void modifyResultItem(Recipe<?> recipe, ResultItemModifier modifier) {
-        resultModifiers.put(recipe, modifier);
+    public static void registerGlobalResultModifier(ResultItemModifier modifier) {
+        resultModifiers.add(modifier);
     }
 
     /**
      * Modifies the result item of the given recipe.
      *
-     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     * @see RecipeModification#registerGlobalResultModifier(ResultItemModifier)
      * @see RecipeModification#replaceResultItem(Recipe, ItemStack)
+     * @see RecipeModifier#replaceResultItem(Function)
      */
     public static void modifyResultItemSimple(Recipe<?> recipe, Consumer<ItemStack> modifier) {
         var result = recipe.getResultItem(getRegistryAccess());
         modifier.accept(result);
         if (recipe.getResultItem(getRegistryAccess()) == result) return;
 
-        modifyResultItem(recipe, (recipe1, result1, recipeInput) -> {
-            modifier.accept(result1);
+        registerGlobalResultModifier((recipe1, result1, recipeInput) -> {
+            if (recipe1 == recipe) modifier.accept(result1);
             return result1;
         });
     }
@@ -103,7 +104,7 @@ public abstract class RecipeModification {
      * Overrides the result item of the given recipe.
      *
      * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
-     * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
+     * @see RecipeModifier#replaceResultItem(ItemStack)
      */
     public static void replaceResultItem(Recipe<?> recipe, ItemStack newResult) {
         resultItemOverrides.put(recipe, newResult);
@@ -269,7 +270,7 @@ public abstract class RecipeModification {
     public static ItemStack getRecipeResult(Recipe<?> recipe, ItemStack currentResult,
                                             @Nullable RecipeInput recipeInput) {
         currentResult = resultItemOverrides.getOrDefault(recipe, currentResult).copy();
-        for (var modifier : resultModifiers.get(recipe)) {
+        for (var modifier : resultModifiers) {
             currentResult = modifier.getResultItem(recipe, currentResult, recipeInput);
         }
         return currentResult;
