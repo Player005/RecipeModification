@@ -42,13 +42,6 @@ neoForge {
 }
 
 tasks {
-    jar {
-        // add common code to jar
-        val main = project.project(":common").sourceSets.main.get()
-        from(main.output.classesDirs)
-        from(main.output.resourcesDir)
-    }
-
     named("compileTestJava").configure {
         enabled = false
     }
@@ -85,6 +78,14 @@ tasks {
             expand(inputs.properties["property_map"] as Map<String, String>)
         }
 
+        doFirst {
+            if (inputs.properties.containsKey("isRelease")) {
+                exclude("*/testing/*")
+            }
+        }
+    }
+
+    processResources {
         doFirst {
             if (inputs.properties.containsKey("isRelease")) {
                 exclude("*/testing/*")
