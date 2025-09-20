@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 /**
  * A functional interface to modify the result item of a recipe.
  *
+ * @see RecipeModification#registerGlobalResultModifier(ResultItemModifier)
  * @see RecipeModification#modifyResultItemSimple(Recipe, Consumer)
- * @see RecipeModification#modifyResultItem(Recipe, ResultItemModifier)
  * @see #getResultItem(Recipe, ItemStack, RecipeInput)
  */
 @FunctionalInterface
