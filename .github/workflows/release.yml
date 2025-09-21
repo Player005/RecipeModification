@@ -45,10 +45,6 @@ jobs:
             build/libs_neoforge/!(*-@(dev|sources|javadoc)).jar
             build/libs_neoforge/*-@(dev|sources|javadocs).jar
 
-          version-type: release
-          loaders: neoforge
-          version-resolver: latest
-
       - name: Upload fabric artifacts to Modrinth and GitHub
         uses: Kir-Antipov/mc-publish@v3.3
         with:
@@ -62,7 +58,3 @@ jobs:
           files: |
             build/libs_fabric/!(*-@(dev|sources|javadoc)).jar
             build/libs_fabric/*-@(dev|sources|javadocs).jar
-
-          version-type: release
-          loaders: fabric quilt
-          version-resolver: latest
