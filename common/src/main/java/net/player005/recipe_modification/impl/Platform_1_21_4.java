@@ -73,6 +73,7 @@ public abstract class Platform_1_21_4 implements Platform {
             var addedItems = Lists.newArrayList(BuiltInRegistries.ITEM.getTagOrEmpty(itemTag));
 
             var newValues = getHolderStream(ingredient).collect(Collectors.toList());
+            //noinspection NullableProblems
             newValues.addAll(addedItems);
             getAccessor(ingredient).replaceValues(HolderSet.direct(newValues));
         }
