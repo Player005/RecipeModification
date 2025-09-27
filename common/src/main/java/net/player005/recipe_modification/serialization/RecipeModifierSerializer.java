@@ -42,8 +42,8 @@ public abstract class RecipeModifierSerializer {
             return RecipeModifier.removeIngredients(ingredientSelector);
         });
 
-        registerDeserializer("replace_ingredient", object -> {
-            var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredient"));
+        registerDeserializer("replace_ingredients", object -> {
+            var ingredientSelector = IngredientSelectorSerializer.fromJson(object.get("ingredients"));
             var newIngredient = Ingredient.fromJson(object.get("new_ingredient"));
             return RecipeModifier.replaceIngredient(ingredientSelector, newIngredient);
         });
