@@ -60,13 +60,7 @@ public interface RecipeFilter {
     }
 
     static RecipeFilter resultItemMatches(ItemPredicate predicate) {
-        return (recipe, registryAccess) -> {
-            if (predicate.matches(recipe.getResultItem(registryAccess))) {
-                System.out.println("MATCH! recipe: " + recipe.getId());
-                return true;
-            }
-            return false;
-        };
+        return (recipe, registryAccess) -> predicate.matches(recipe.getResultItem(registryAccess));
     }
 
     /**
