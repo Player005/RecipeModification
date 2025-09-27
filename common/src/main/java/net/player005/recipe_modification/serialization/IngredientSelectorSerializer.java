@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Items;
 import net.player005.recipe_modification.api.IngredientSelector;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,10 @@ import java.util.function.Function;
 public abstract class IngredientSelectorSerializer {
     private static final Map<String, Function<JsonObject, IngredientSelector>> deserializers = new HashMap<>();
 
-    public static IngredientSelector fromJson(JsonElement json) {
+    public static IngredientSelector fromJson(@Nullable JsonElement json) {
+        if (json == null)
+            throw new RecipeModifierParsingException("Missing ingredient selector. Maybe you typed \"ingredient\" " +
+                "instead of \"ingredients\"?");
         if (json instanceof JsonPrimitive primitive) {
             if (primitive.isNumber()) return IngredientSelector.byOrdinals(primitive.getAsInt());
             if (primitive.isString()) return fromString(primitive.getAsString());
