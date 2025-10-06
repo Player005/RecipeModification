@@ -1,10 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
 import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.RemapSourcesJarTask
 
 plugins {
-    id("fabric-loom") version "1.8.9"
+    id("fabric-loom") version "1.10-SNAPSHOT"
 }
 
 // add a repositories block here for fabric-only dependencies if you need it
@@ -29,20 +28,22 @@ dependencies {
 
 loom {
     runs {
+        val vmArgs = arrayOf("-XX:+UseZGC", "-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xms500M", "-Xmx2G")
         named("client") {
             client()
-            configName = "Fabric Client"
             runDir("../run/client/${properties["minecraft_version"]}")
-            ideConfigGenerated(false)
+            configName = "Fabric/Client"
+            vmArgs(*vmArgs)
         }
         named("server") {
             server()
-            configName = "Fabric Server"
-            runDir("../run/client/${properties["minecraft_version"]}")
-            ideConfigGenerated(false)
+            runDir("../run/server/${properties["minecraft_version"]}")
+            configName = "Fabric/Server"
+            vmArgs(*vmArgs)
         }
     }
 
+    // include access wideners from common
     accessWidenerPath = project(":common").loom.accessWidenerPath
 }
 
@@ -53,10 +54,10 @@ tasks {
     }
 
     // put all artifacts in the right directory
-    withType<RemapJarTask> {
+    withType<Jar> {
         destinationDirectory = rootDir.resolve("build").resolve("libs_fabric")
     }
-    withType<RemapSourcesJarTask> {
+    withType<RemapJarTask> {
         destinationDirectory = rootDir.resolve("build").resolve("libs_fabric")
     }
 
@@ -80,7 +81,6 @@ tasks {
     named("test").configure {
         enabled = false
     }
-
 
     processResources {
         doFirst {

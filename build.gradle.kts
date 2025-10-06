@@ -3,7 +3,7 @@ import org.gradle.api.internal.provider.DefaultProvider
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version "1.8.9" apply false
+    id("fabric-loom") version "1.10-SNAPSHOT" apply false
 }
 
 subprojects {

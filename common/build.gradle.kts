@@ -1,10 +1,10 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("fabric-loom") version ("1.8.9")
+    id("fabric-loom") version ("1.10-SNAPSHOT")
 }
 
-// you can put a repositories block here if you need common dependencies from sources other than modrinth
+// you can put a repositories block here if you need common dependencies from other sources than modrinth
 
 dependencies {
     minecraft("com.mojang:minecraft:${rootProject.properties["minecraft_version"]}")
@@ -20,7 +20,7 @@ dependencies {
     compileOnly("net.fabricmc:sponge-mixin:0.15.3+mixin.0.8.7")
     modImplementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
 
-    testImplementation("net.fabricmc:fabric-loader-junit:${rootProject.properties["fabric_loader_version"]}")
+    // add your dependencies here
 }
 
 loom {
@@ -34,14 +34,10 @@ loom {
     }
 }
 
+// don't generate jar files for the common code
 tasks {
     jar { enabled = false }
     remapJar { enabled = false }
-
-    test {
-        enabled = false
-        useJUnitPlatform()
-    }
 
     processResources {
         doFirst {
