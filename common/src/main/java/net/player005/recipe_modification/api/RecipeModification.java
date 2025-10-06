@@ -1,7 +1,9 @@
 package net.player005.recipe_modification.api;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +19,10 @@ import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -304,8 +309,8 @@ public abstract class RecipeModification {
     private static int applyAllModifiers(Recipe<?> recipe, RegistryAccess registryAccess) {
         var appliedOnRecipe = 0;
         for (RecipeModifierHolder modifier : getAllModifiers()) {
-            if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
             try {
+                if (!modifier.filter().shouldApply(recipe, registryAccess)) continue;
                 RecipeHelper helper = getPlatform().getHelper();
                 modifier.apply(recipe, helper);
             } catch (Exception e) {
@@ -320,6 +325,8 @@ public abstract class RecipeModification {
         var byResultBuilder = ImmutableMultimap.<Item, Recipe<?>>builder();
         for (Recipe<?> recipe : recipeManager.getRecipes()) {
             var result = tryGetResult(recipe, getRegistryAccess());
+            //noinspection ConstantValue
+            if (result == null) continue;
             byResultBuilder.put(result.getItem(), recipe);
         }
 
