@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "${mod_id}",
-  "version": "${version}",
-  "name": "${name}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
   "entrypoints": {
     "main": [
       "net.player005.recipe_modification.fabric.ModFabric"
     ]
   },
-  "description": "${description}",
+  "description": "${mod_description}",
   "license": "${mod_license}",
   "authors": [
     "${mod_authors}"
