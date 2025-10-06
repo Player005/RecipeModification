@@ -304,6 +304,8 @@ public abstract class RecipeModification {
         var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
             var result = recipeHolder.value().getResultItem(getRegistryAccess());
+            //noinspection ConstantValue
+            if (result == null) continue;
             byResultBuilder.put(result.getItem(), recipeHolder);
         }
 
@@ -328,9 +330,9 @@ public abstract class RecipeModification {
             // apply recipeModifiers
             var appliedOnRecipe = 0;
             for (RecipeModifierHolder modifier : getAllModifiers()) {
-                if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
-                RecipeHelper helper = getPlatform().getHelper();
                 try {
+                    if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
+                    RecipeHelper helper = getPlatform().getHelper();
                     modifier.apply(recipeHolder.value(), helper);
                 } catch (Exception e) {
                     logger.error("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipeHolder.id(), e);
