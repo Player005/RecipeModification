@@ -13,6 +13,7 @@
   "authors": [
     "${mod_authors}"
   ],
+  "icon": "icon.png",
   "mixins": [
     "recipe_modification.mixins.json",
     "recipe_modification_fabric.mixins.json"
