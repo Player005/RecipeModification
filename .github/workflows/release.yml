@@ -34,9 +34,6 @@ jobs:
       - name: Upload neoforge artifacts to Modrinth and Curseforge
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: fRIu3HNp
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
           loaders: forge
@@ -50,9 +47,6 @@ jobs:
       - name: Upload fabric artifacts to Modrinth and GitHub
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: fRIu3HNp
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
           loaders: fabric
           
           curseforge-id: 1345325
