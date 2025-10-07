@@ -1,11 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
+  "refmap": "recipe_modification.refmap.json",
   "package": "net.player005.recipe_modification.impl.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "IngredientMixin",
-    "ItemValueAccessor",
     "NonNullListMixin",
     "RecipeManagerAccessor",
     "RecipeMixin",

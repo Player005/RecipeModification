@@ -6,7 +6,6 @@ import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.player005.recipe_modification.api.RecipeModification;
 import net.player005.recipe_modification.impl.Platform_1_20_1;
@@ -18,7 +17,7 @@ public class ModNeoforge {
 
     public static final String modID = "recipe_modification";
 
-    public ModNeoforge(FMLJavaModLoadingContext context) {
+    public ModNeoforge() {
         RecipeModification.initPlatform(new Platform_1_20_1() {
             @Override
             public boolean isDevelopmentEnvironment() {

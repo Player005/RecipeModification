@@ -4,12 +4,12 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.player005.recipe_modification.api.Platform;
 import net.player005.recipe_modification.api.RecipeHelper;
-import net.player005.recipe_modification.impl.mixin.ItemValueAccessor;
 import net.player005.recipe_modification.impl.mixin.RecipeManagerAccessor;
 import net.player005.recipe_modification.impl.mixin.TagValueAccessor;
 import org.apache.commons.lang3.ArrayUtils;
@@ -83,7 +83,7 @@ public abstract class Platform_1_20_1 implements Platform {
         public void removeAlternatives(Ingredient ingredient, Item... items) {
             var newValues = new ArrayList<>(List.of(getAccessor(ingredient).getValues()));
             for (var item : items)
-                newValues.removeIf(value -> value instanceof Ingredient.ItemValue && ((ItemValueAccessor) value).getItem().is(item));
+                newValues.removeIf(value -> value.getItems().size() == 1 && value.getItems().stream().findAny().orElse(ItemStack.EMPTY).is(item));
             getAccessor(ingredient).replaceValues(newValues.toArray(new Ingredient.Value[0]));
         }
 
@@ -101,10 +101,11 @@ public abstract class Platform_1_20_1 implements Platform {
 
         @Override
         public boolean isExactMatch(Ingredient ingredient, Item item) {
-            for (Ingredient.Value value : getAccessor(ingredient).getValues())
-                if (value instanceof Ingredient.ItemValue && ((ItemValueAccessor) value).getItem().is(item))
-                    return true;
-            return false;
+            if (ingredient.isEmpty()) return false;
+            for (ItemStack stack : ingredient.getItems()) {
+                if (!stack.is(item)) return false;
+            }
+            return true;
         }
 
         @Override
