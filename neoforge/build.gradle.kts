@@ -87,4 +87,12 @@ tasks {
     withType<Jar> {
         destinationDirectory = rootDir.resolve("build").resolve("libs_forge")
     }
+
+    processResources {
+        doFirst {
+            if (inputs.properties.containsKey("isRelease")) {
+                exclude("*/testing/*")
+            }
+        }
+    }
 }
