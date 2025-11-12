@@ -1,7 +1,9 @@
 package net.player005.recipe_modification.api;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
@@ -18,7 +20,10 @@ import org.jetbrains.annotations.UnknownNullability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -256,6 +261,16 @@ public abstract class RecipeModification {
         return fullList;
     }
 
+    public static ItemStack tryGetResult(RecipeHolder<?> recipe, HolderLookup.Provider registryAccess) {
+        try {
+            return recipe.value().getResultItem(registryAccess);
+        } catch (Exception exception) {
+            logger.warn("Failed to get result for recipe {}", recipe.id());
+            logger.debug("Exception querying result:", exception);
+            return ItemStack.EMPTY;
+        }
+    }
+
     public static boolean isInitialised() {
         return recipeManager != null;
     }
@@ -301,22 +316,15 @@ public abstract class RecipeModification {
         var recipeManagerMutable = CompletableFuture
             .runAsync(() -> ((RecipeManagerAccessorTwo) recipeManager).recipeModification$makeMutable());
 
-        var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
-        for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
-            var result = recipeHolder.value().getResultItem(getRegistryAccess());
-            //noinspection ConstantValue
-            if (result == null) continue;
-            byResultBuilder.put(result.getItem(), recipeHolder);
-        }
+        recipesByResult = buildRecipeResultMap();
 
-        recipesByResult = byResultBuilder.build();
         logger.debug("Built recipe by result map for {} recipes in {}", recipeManager.getRecipes().size(), timer);
         timer.reset().start();
 
         for (Consumer<RecipeManager> recipeManagerCallback : recipeManagerCallbacks) {
             recipeManagerCallback.accept(recipeManager);
         }
-        logger.debug("Executed {} recipe callbacks in {}", recipeManagerCallbacks.size(), timer);
+        logger.debug("Executed {} recipe manager callbacks in {}", recipeManagerCallbacks.size(), timer);
 
         timer.reset().start();
         var modified = 0;
@@ -324,24 +332,9 @@ public abstract class RecipeModification {
         logger.info("Found {} recipe modifiers in datapacks, {} total",
             modifiersFromDatapack.size(), getAllModifiers().size());
 
+        final var registryAccess = getRegistryAccess();
         for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
-            final var registryAccess = getRegistryAccess();
-
-            // apply recipeModifiers
-            var appliedOnRecipe = 0;
-            for (RecipeModifierHolder modifier : getAllModifiers()) {
-                try {
-                    if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
-                    RecipeHelper helper = getPlatform().getHelper();
-                    modifier.apply(recipeHolder.value(), helper);
-                } catch (Exception e) {
-                    logger.error("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipeHolder.id(), e);
-                }
-                appliedOnRecipe++;
-            }
-
-            if (appliedOnRecipe > 0)
-                logger.debug("Applied {} recipe modifiers to {}", appliedOnRecipe, recipeHolder.id());
+            var appliedOnRecipe = applyAllModifiers(recipeHolder, registryAccess);
 
             modified += appliedOnRecipe;
         }
@@ -350,6 +343,39 @@ public abstract class RecipeModification {
         recipeManager.getRecipes().removeIf(r -> toRemove.contains(r.id()));
         recipeManager.getOrderedRecipes().removeIf(r -> toRemove.contains(r.id()));
 
-        logger.info("Modified {} recipes in {}", modified, timer);
+        logger.info("Applied {} modifications to recipes in {}", modified, timer);
+    }
+
+    private static int applyAllModifiers(RecipeHolder<?> recipeHolder, HolderLookup.Provider registryAccess) {
+        var appliedOnRecipe = 0;
+        for (RecipeModifierHolder modifier : getAllModifiers()) {
+            try {
+                if (!modifier.filter().shouldApply(recipeHolder, registryAccess)) continue;
+                RecipeHelper helper = getPlatform().getHelper();
+                modifier.apply(recipeHolder.value(), helper);
+            } catch (Exception e) {
+                handleError(recipeHolder, modifier, e);
+            }
+            appliedOnRecipe++;
+        }
+
+        return appliedOnRecipe;
+    }
+
+    private static ImmutableMultimap<Item, RecipeHolder<?>> buildRecipeResultMap() {
+        var byResultBuilder = ImmutableMultimap.<Item, RecipeHolder<?>>builder();
+        for (RecipeHolder<?> recipeHolder : recipeManager.getRecipes()) {
+            var result = tryGetResult(recipeHolder, getRegistryAccess());
+            //noinspection ConstantValue
+            if (result == null) continue;
+            byResultBuilder.put(result.getItem(), recipeHolder);
+        }
+
+        return byResultBuilder.build();
+    }
+
+    private static void handleError(RecipeHolder<?> recipe, RecipeModifierHolder modifier, Exception e) {
+        logger.debug("Failed to apply modifier '{}' to recipe '{}'", modifier.id(), recipe.id());
+        logger.debug("Exception:", e);
     }
 }
