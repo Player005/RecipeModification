@@ -1,5 +1,5 @@
 plugins {
-    id("net.neoforged.moddev") version "2.0.99"
+    id("net.neoforged.moddev") version "2.0.120"
 }
 
 // put a repositories block here for neoforge-only repositories if you need it
