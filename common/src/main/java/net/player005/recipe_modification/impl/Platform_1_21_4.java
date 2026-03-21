@@ -6,7 +6,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 public abstract class Platform_1_21_4 implements Platform {
 
     @Override
-    public @Nullable RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, ResourceLocation id) {
+    public @Nullable RecipeHolder<?> getRecipeByID(RecipeManager recipeManager, Identifier id) {
         return recipeManager.byKey(ResourceKey.create(
                 Registries.RECIPE, id
         )).orElse(null);

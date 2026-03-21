@@ -5,10 +5,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,8 +26,8 @@ public abstract class RecipeFilterSerializer {
 
     private static final Map<String, Function<JsonObject, RecipeFilter>> deserializers = new HashMap<>();
 
-    private static final ResourceLocation CRAFTING_SHAPED = ResourceLocation.parse("crafting_shaped");
-    private static final ResourceLocation CRAFTING_SHAPELESS = ResourceLocation.parse("crafting_shapeless");
+    private static final Identifier CRAFTING_SHAPED = Identifier.parse("crafting_shaped");
+    private static final Identifier CRAFTING_SHAPELESS = Identifier.parse("crafting_shapeless");
 
     public static RecipeFilter fromJson(JsonElement json) {
         if (json instanceof JsonPrimitive primitive && primitive.isString())
@@ -47,15 +47,15 @@ public abstract class RecipeFilterSerializer {
     private static RecipeFilter fromString(String string) {
         if (string.startsWith("!")) return RecipeFilter.not(fromString(string.substring(1)));
         if (string.startsWith("#")) return RecipeFilter.resultItemIs(
-            TagKey.create(Registries.ITEM, ResourceLocation.parse(string.replaceFirst("#", ""))));
+            TagKey.create(Registries.ITEM, Identifier.parse(string.replaceFirst("#", ""))));
         if (string.equals("*")) return RecipeFilter.ALWAYS_APPLY;
         if (!string.contains(":")) return RecipeFilter.namespaceEquals(string);
-        var rl = ResourceLocation.tryParse(string);
+        var rl = Identifier.tryParse(string);
         if (rl == null)
             throw new RecipeModifierParsingException("Invalid resource location in shorthand recipe filter: " + string);
         if (BuiltInRegistries.ITEM.containsKey(rl))
             return RecipeFilter.resultItemIs(BuiltInRegistries.ITEM.get(rl).orElseThrow().value());
-        return RecipeFilter.idEquals(ResourceLocation.parse(string));
+        return RecipeFilter.idEquals(Identifier.parse(string));
     }
 
     static {
@@ -79,7 +79,7 @@ public abstract class RecipeFilterSerializer {
                 RecipeFilter.and(itemFilter, RecipeFilter.resultItemMatches(predicate));
         });
         registerSerializer("id_equals", (json) -> {
-            var id = ResourceLocation.parse(json.get("id").getAsString());
+            var id = Identifier.parse(json.get("id").getAsString());
             return RecipeFilter.idEquals(id);
         });
         registerSerializer("namespace_equals", (json) -> {
@@ -105,7 +105,7 @@ public abstract class RecipeFilterSerializer {
             return RecipeFilter.not(filter);
         });
         registerSerializer("is_recipe_type", (json) -> {
-            var rl = ResourceLocation.parse(json.get("recipe_type").getAsString());
+            var rl = Identifier.parse(json.get("recipe_type").getAsString());
             if (rl.equals(CRAFTING_SHAPED)) return (recipe, registries) -> recipe.value() instanceof ShapedRecipe;
             if (rl.equals(CRAFTING_SHAPELESS)) return (recipe, registries) -> recipe.value() instanceof ShapelessRecipe;
             var type = BuiltInRegistries.RECIPE_TYPE.getValue(rl);
@@ -118,7 +118,7 @@ public abstract class RecipeFilterSerializer {
     private static RecipeFilter createFilterByResultItem(JsonElement json) {
         if (json instanceof JsonArray array) {
             Item[] items = array.asList().stream().map(jsonElement ->
-                BuiltInRegistries.ITEM.get(ResourceLocation.parse(jsonElement.getAsString()))).toArray(Item[]::new);
+                BuiltInRegistries.ITEM.get(Identifier.parse(jsonElement.getAsString()))).toArray(Item[]::new);
             return RecipeFilter.resultItemIs(items);
         }
 
@@ -128,11 +128,11 @@ public abstract class RecipeFilterSerializer {
 
         var str = json.getAsString();
         if (str.startsWith("#")) {
-            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, ResourceLocation.parse(str.replace("#", "")));
+            TagKey<Item> itemTag = TagKey.create(Registries.ITEM, Identifier.parse(str.replace("#", "")));
             return RecipeFilter.resultItemIs(itemTag);
         }
 
-        var item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(str));
+        var item = BuiltInRegistries.ITEM.get(Identifier.parse(str));
         return RecipeFilter.resultItemIs(item.orElseThrow().value());
     }
 

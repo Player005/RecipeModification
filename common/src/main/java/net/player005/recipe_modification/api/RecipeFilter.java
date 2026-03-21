@@ -1,8 +1,8 @@
 package net.player005.recipe_modification.api;
 
-import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -85,15 +85,15 @@ public interface RecipeFilter {
     /**
      * Returns a recipe filter that filters for the recipe with the given id.
      */
-    static RecipeFilter idEquals(ResourceLocation id) {
-        return (recipe, registryAccess) -> recipe.id().location().equals(id);
+    static RecipeFilter idEquals(Identifier id) {
+        return (recipe, registryAccess) -> recipe.id().identifier().equals(id);
     }
 
     /**
      * Returns a recipe filter that filters for recipes in the given namespace.
      */
     static RecipeFilter namespaceEquals(String group) {
-        return (recipe, registryAccess) -> recipe.id().location().getNamespace().equals(group);
+        return (recipe, registryAccess) -> recipe.id().identifier().getNamespace().equals(group);
     }
 
     /**
