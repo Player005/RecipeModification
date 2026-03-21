@@ -21,12 +21,10 @@ dependencies {
     })
 
     modImplementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
-    // This line can be removed if you don't need fabric api
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${rootProject.properties["fabric_api_version"]}")
-
     implementation(project.project(":common").sourceSets.getByName("main").output)
 
-    modRuntimeOnly("me.shedaniel:RoughlyEnoughItems-fabric:18.0.804")
+    // Keep runtime classpath minimal for cross-version library testing.
+    // REI pulls an outdated Fabric API for 1.21.4 and breaks 1.21.11 launches.
 }
 
 loom {
