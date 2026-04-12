@@ -1,6 +1,6 @@
 package net.player005.recipe_modification;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
@@ -19,13 +19,13 @@ public class ModNeoforge {
         RecipeModification.initPlatform(new Platform_1_21_4() {
             @Override
             public boolean isDevelopmentEnvironment() {
-                return !FMLLoader.isProduction();
+                return !FMLLoader.getCurrent().isProduction();
             }
         });
         NeoForge.EVENT_BUS.addListener(AddServerReloadListenersEvent.class, event -> {
-            var rl = ResourceLocation.parse("recipe_modification:recipe_modifier_manager");
+            var rl = Identifier.parse("recipe_modification:recipe_modifier_manager");
             event.addListener(rl, new RecipeModifierManager());
-            event.addDependency(rl, ResourceLocation.parse("minecraft:recipe_manager"));
+            event.addDependency(rl, Identifier.parse("minecraft:recipe_manager"));
         });
     }
 }

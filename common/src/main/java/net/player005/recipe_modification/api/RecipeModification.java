@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
@@ -28,7 +28,7 @@ import java.util.function.Function;
  * The central class for recipe modifications, containing some utility methods.
  *
  * @see #registerModifier(RecipeModifierHolder)
- * @see #registerModifier(ResourceLocation, RecipeFilter, RecipeModifier...)
+ * @see #registerModifier(Identifier, RecipeFilter, RecipeModifier...)
  * @see #removeRecipe(RecipeHolder)
  * @see #forAllRecipesAsync(Consumer)
  * @see #onRecipeInit(Consumer)
@@ -42,7 +42,7 @@ public abstract class RecipeModification {
 
     private static final NonNullList<Consumer<RecipeManager>> recipeManagerCallbacks = NonNullList.create();
 
-    private static final NonNullList<ResourceLocation> toRemove = NonNullList.create();
+    private static final NonNullList<Identifier> toRemove = NonNullList.create();
     private static final NonNullList<RecipeModifierHolder> modifiers = NonNullList.create();
     private static @UnknownNullability ImmutableList<RecipeModifierHolder> modifiersFromDatapack;
     public static final List<ResultItemModifier> resultModifiers = NonNullList.create();
@@ -134,15 +134,15 @@ public abstract class RecipeModification {
      * @param recipeHolder The recipe to remove
      */
     public static void removeRecipe(RecipeHolder<?> recipeHolder) {
-        toRemove.add(recipeHolder.id().location());
+        toRemove.add(recipeHolder.id().identifier());
     }
 
     /**
      * Removes the given recipe from the game
      *
-     * @param id The ResourceLocation of the recipe to remove
+     * @param id The Identifier of the recipe to remove
      */
-    public static void removeRecipe(ResourceLocation id) {
+    public static void removeRecipe(Identifier id) {
         toRemove.add(id);
     }
 
@@ -158,7 +158,7 @@ public abstract class RecipeModification {
      *
      * @see #registerModifier(RecipeModifierHolder)
      */
-    public static void registerModifier(ResourceLocation id, RecipeFilter filter, ModificationSet modifications) {
+    public static void registerModifier(Identifier id, RecipeFilter filter, ModificationSet modifications) {
         registerModifier(new RecipeModifierHolder(id, filter, modifications));
     }
 
@@ -167,7 +167,7 @@ public abstract class RecipeModification {
      *
      * @see #registerModifier(RecipeModifierHolder)
      */
-    public static void registerModifier(ResourceLocation id, RecipeFilter filter, RecipeModifier... modifications) {
+    public static void registerModifier(Identifier id, RecipeFilter filter, RecipeModifier... modifications) {
         registerModifier(new RecipeModifierHolder(id, filter, modifications));
     }
 
@@ -176,7 +176,7 @@ public abstract class RecipeModification {
      *
      * @throws IllegalStateException if the recipe manager isn't initialised yet (see {@link #getRecipeManager()})
      */
-    public static @Nullable RecipeHolder<?> getByID(ResourceLocation id) {
+    public static @Nullable RecipeHolder<?> getByID(Identifier id) {
         checkInitialised("get recipe by ID");
         return getPlatform().getRecipeByID(recipeManager, id);
     }
@@ -287,7 +287,7 @@ public abstract class RecipeModification {
     /**
      * Internal method that should be called on every datapack reload.
      * Initialises all registered {@link RecipeModifierHolder}s, calls all {@link #onRecipeInit(Consumer)}
-     * callbacks and removes recipes registered for removal using {@link #removeRecipe(ResourceLocation)}
+     * callbacks and removes recipes registered for removal using {@link #removeRecipe(Identifier)}
      */
     @ApiStatus.Internal
     private static void applyModifications() {
@@ -313,8 +313,8 @@ public abstract class RecipeModification {
 
             applyAllModifiers(recipeHolder, registryAccess);
 
-            for (ResourceLocation id : toRemove) {
-                if (recipeHolder.id().location().equals(id)) {
+            for (Identifier id : toRemove) {
+                if (recipeHolder.id().identifier().equals(id)) {
                     recipeManager.getRecipes().remove(recipeHolder); // TODO
                 }
             }

@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.FileToIdConverter;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.ExtraCodecs;
@@ -25,10 +25,10 @@ public class RecipeModifierManager extends SimpleJsonResourceReloadListener<Json
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+    protected void apply(Map<Identifier, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
         var builder = ImmutableList.<RecipeModifierHolder>builder();
 
-        for (Map.Entry<ResourceLocation, JsonElement> entry : object.entrySet()) {
+        for (Map.Entry<Identifier, JsonElement> entry : object.entrySet()) {
             var id = entry.getKey();
 
             try {

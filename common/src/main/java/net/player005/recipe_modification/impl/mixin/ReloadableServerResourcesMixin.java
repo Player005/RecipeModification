@@ -6,6 +6,7 @@ import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerResources;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.player005.recipe_modification.api.RecipeModification;
@@ -26,7 +27,7 @@ public abstract class ReloadableServerResourcesMixin {
     @Inject(method = "<init>", at = @At("RETURN"))
     public void getRegistryAccess(LayeredRegistryAccess<RegistryLayer> registryAccess, HolderLookup.Provider registries,
                                   FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection,
-                                  List<Registry.PendingTags<?>> postponedTags, int functionCompilationLevel,
+                                  List<Registry.PendingTags<?>> postponedTags, PermissionSet permissionSet,
                                   CallbackInfo ci) {
         RecipeModification.onInitRegistries(registries);
     }
