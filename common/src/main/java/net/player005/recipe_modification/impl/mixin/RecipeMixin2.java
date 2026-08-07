@@ -7,7 +7,6 @@ import net.minecraft.world.item.crafting.*;
 import net.player005.recipe_modification.api.RecipeModification;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -23,9 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 })
 public class RecipeMixin2 {
 
-    @SuppressWarnings("MixinAnnotationTarget")
-    @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "assemble", args =
-            {Container.class, RegistryAccess.class}, ret = ItemStack.class), require = 0)
+    @Inject(at = @At("RETURN"), cancellable = true, method = "assemble(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;", require = 0)
     public void modifyAssemble(Container recipeInput, RegistryAccess registryAccess, CallbackInfoReturnable<ItemStack> cir) {
         cir.setReturnValue(RecipeModification.getRecipeResult((Recipe<?>) this, cir.getReturnValue(), recipeInput).copy());
     }
