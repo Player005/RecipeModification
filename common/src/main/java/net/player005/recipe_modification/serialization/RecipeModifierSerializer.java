@@ -53,8 +53,9 @@ public abstract class RecipeModifierSerializer {
         });
 
         registerDeserializer("replace_result_item", object -> {
-            var newResult = ItemStack.CODEC.parse(serializationContext, object.get("new_result")).getOrThrow();
-            return RecipeModifier.replaceResultItem(newResult);
+            var newResult = object.get("new_result");
+            return (recipe, helper) -> RecipeModification.replaceResultItem(recipe,
+                ItemStack.CODEC.parse(serializationContext, newResult).getOrThrow());
         });
 
         registerDeserializer("modify_result_item", object -> {

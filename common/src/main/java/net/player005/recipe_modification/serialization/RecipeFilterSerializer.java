@@ -60,10 +60,8 @@ public abstract class RecipeFilterSerializer {
 
     static {
         registerSerializer("all_recipes", (json) -> RecipeFilter.ALWAYS_APPLY);
-        registerSerializer("accepting_ingredient", (json) -> {
-            var item = ItemStack.CODEC.parse(JsonOps.INSTANCE, json.get("item")).getOrThrow();
-            return RecipeFilter.acceptsIngredient(item);
-        });
+        registerSerializer("accepting_ingredient",
+            (json) -> (recipe, registryAccess) -> recipe.value().placementInfo().ingredients().stream().anyMatch(ingredient -> ingredient.test(ItemStack.CODEC.parse(JsonOps.INSTANCE, json.get("item")).getOrThrow())));
         registerSerializer("result_item_is", json -> createFilterByResultItem(json.get("item")));
         registerSerializer("result_item_predicate", (json) -> {
             RecipeFilter itemFilter = null;

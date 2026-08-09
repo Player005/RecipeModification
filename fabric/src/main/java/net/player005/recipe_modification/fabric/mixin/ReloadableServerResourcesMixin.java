@@ -15,8 +15,8 @@ public abstract class ReloadableServerResourcesMixin {
 
     @ModifyReturnValue(method = "listeners", at = @At("RETURN"))
     public List<PreparableReloadListener> addRecipeModifierListener(List<PreparableReloadListener> original) {
-        // init the RecipeModifierManager right before RecipeManager (which was on index 1 previously)
-        var newArray = ArrayUtils.insert(1,
+        // init the RecipeModifierManager right before RecipeManager (which was on index 0 previously)
+        var newArray = ArrayUtils.insert(0,
             original.toArray(PreparableReloadListener[]::new),
             new RecipeModifierManager());
         return List.of(newArray);
