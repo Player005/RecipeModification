@@ -9,7 +9,6 @@ import net.player005.recipe_modification.impl.RecipeDisplayAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -22,9 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 })
 public abstract class RecipeDisplayMixin implements RecipeDisplayAccessor {
 
-    @SuppressWarnings("MixinAnnotationTarget")
-    @Inject(at = @At("RETURN"), cancellable = true, target = @Desc(value = "result", ret =
-        SlotDisplay.class))
+    @Inject(at = @At("RETURN"), cancellable = true, method = "result")
     public void modifyResult(CallbackInfoReturnable<SlotDisplay> cir) {
         if (recipeModification$parentRecipe == null) return;
         var currentResult = cir.getReturnValue()

@@ -5,7 +5,6 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.player005.recipe_modification.impl.RecipeDisplayAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -21,8 +20,7 @@ import java.util.List;
 })
 public class RecipeMixin1 {
 
-    @SuppressWarnings("MixinAnnotationTarget")
-    @Inject(at = @At("RETURN"), target = @Desc(value = "display", ret = List.class))
+    @Inject(at = @At("RETURN"), method = "display")
     public void modifyDisplay(CallbackInfoReturnable<List<RecipeDisplay>> cir) {
         for (var display : cir.getReturnValue()) {
             ((RecipeDisplayAccessor) display).recipeModification$setParentRecipe((Recipe<?>) this);
