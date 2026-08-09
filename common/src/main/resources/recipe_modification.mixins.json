@@ -12,6 +12,7 @@
     "RecipeMixin3",
     "ReloadableServerResourcesMixin"
   ],
+  "refmap": "recipe_modification.refmap.json",
   "injectors": {
     "defaultRequire": 1
   }

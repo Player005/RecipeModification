@@ -22,9 +22,6 @@ dependencies {
 
     modImplementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
     implementation(project.project(":common").sourceSets.getByName("main").output)
-
-    // Keep runtime classpath minimal for cross-version library testing.
-    // REI pulls an outdated Fabric API for 1.21.4 and breaks 1.21.11 launches.
 }
 
 loom {
@@ -47,7 +44,8 @@ loom {
     }
 
     mixin {
-        useLegacyMixinAp = false
+        useLegacyMixinAp = true
+        defaultRefmapName = "recipe_modification.refmap.json"
     }
 
     // include access wideners from common
