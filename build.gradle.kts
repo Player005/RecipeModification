@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version "1.10-SNAPSHOT" apply false
+    id("fabric-loom") version "1.15.5" apply false
 }
 
 subprojects {
@@ -13,7 +13,7 @@ subprojects {
         mavenCentral()
         mavenLocal()
 
-        // Add parchment and modrinth maven repositories for convenience
+        // Add the Modrinth Maven repository for convenience
         // filters are added so only relevant dependencies are queried from these repos
         exclusiveContent {
             forRepository {
@@ -27,17 +27,6 @@ subprojects {
             }
         }
 
-        exclusiveContent {
-            forRepository {
-                maven {
-                    name = "Parchment"
-                    url = uri("https://maven.parchmentmc.org")
-                }
-            }
-            filter {
-                includeGroup("org.parchmentmc.data")
-            }
-        }
     }
 
     // tell idea to download sources and javadocs when importing

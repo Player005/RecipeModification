@@ -4,6 +4,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.permissions.PermissionSet;
@@ -25,15 +26,17 @@ public abstract class ReloadableServerResourcesMixin {
     public abstract RecipeManager getRecipeManager();
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void getRegistryAccess(LayeredRegistryAccess<RegistryLayer> registryAccess, HolderLookup.Provider registries,
-                                  FeatureFlagSet enabledFeatures, Commands.CommandSelection commandSelection,
-                                  List<Registry.PendingTags<?>> postponedTags, PermissionSet permissionSet,
-                                  CallbackInfo ci) {
-        RecipeModification.onInitRegistries(registries);
+    public void getRegistryAccess(LayeredRegistryAccess<RegistryLayer> fullLayers,
+                                  HolderLookup.Provider loadingContext, FeatureFlagSet enabledFeatures,
+                                  Commands.CommandSelection commandSelection,
+                                  List<Registry.PendingTags<?>> postponedTags,
+                                  PermissionSet functionCompilationPermissions,
+                                  List<DataComponentInitializers.PendingComponents<?>> newComponents, CallbackInfo ci) {
+        RecipeModification.onInitRegistries(loadingContext);
     }
 
 
-    @Inject(method = "updateStaticRegistryTags", at = @At("RETURN"))
+    @Inject(method = "updateComponentsAndStaticRegistryTags", at = @At("RETURN"))
     public void initialiseRecipeModification(CallbackInfo ci) {
         RecipeModification.onRecipeManagerLoad(getRecipeManager());
     }

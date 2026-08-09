@@ -1,5 +1,5 @@
 plugins {
-    id("net.neoforged.moddev") version "2.0.140"
+    id("net.neoforged.moddev") version "2.0.141"
 }
 
 repositories {
@@ -14,11 +14,6 @@ dependencies {
 
 neoForge {
     version = rootProject.properties["neoforge_version"].toString()
-
-    parchment {
-        minecraftVersion = rootProject.properties["parchment_version"].toString().split(":").first()
-        mappingsVersion = rootProject.properties["parchment_version"].toString().split(":").last()
-    }
 
     runs {
         val vmArgs = arrayOf("-XX:+UseZGC", "-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition", "-Xms500M", "-Xmx2G")

@@ -4,6 +4,7 @@ import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.display.*;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.player005.recipe_modification.api.RecipeModification;
 import net.player005.recipe_modification.impl.RecipeDisplayAccessor;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +29,7 @@ public abstract class RecipeDisplayMixin implements RecipeDisplayAccessor {
             .resolveForFirstStack(new ContextMap.Builder().create(new ContextKeySet.Builder().build()));
         if (currentResult.isEmpty()) return;
         var newResult = RecipeModification.getRecipeResult(recipeModification$parentRecipe, currentResult, null);
-        cir.setReturnValue(new SlotDisplay.ItemStackSlotDisplay(newResult));
+        cir.setReturnValue(new SlotDisplay.ItemStackSlotDisplay(ItemStackTemplate.fromNonEmptyStack(newResult)));
     }
 
     /**

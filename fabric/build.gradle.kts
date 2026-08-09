@@ -1,10 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
-import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.RemapSourcesJarTask
-
 plugins {
-    id("fabric-loom") version "1.10-SNAPSHOT"
+    id("fabric-loom") version "1.15.5"
 }
 
 repositories {
@@ -15,12 +12,9 @@ dependencies.project(":common")
 
 dependencies {
     minecraft("com.mojang:minecraft:${rootProject.properties["minecraft_version"]}")
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${rootProject.properties["parchment_version"]}@zip")
-    })
 
-    modImplementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
+    implementation("net.fabricmc:fabric-loader:${rootProject.properties["fabric_loader_version"]}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${rootProject.properties["fabric_api_version"]}")
     implementation(project.project(":common").sourceSets.getByName("main").output)
 }
 
@@ -44,26 +38,16 @@ loom {
     }
 
     mixin {
-        useLegacyMixinAp = true
+        useLegacyMixinAp = false
         defaultRefmapName = "recipe_modification.refmap.json"
     }
 
-    // include access wideners from common
-    accessWidenerPath = project(":common").loom.accessWidenerPath
 }
 
 tasks {
     withType<JavaCompile> {
         // include common code in compiled jar
         source(project(":common").sourceSets.main.get().allSource)
-    }
-
-    // put all artifacts in the right directory
-    withType<RemapJarTask> {
-        destinationDirectory = rootDir.resolve("build").resolve("libs_fabric")
-    }
-    withType<RemapSourcesJarTask> {
-        destinationDirectory = rootDir.resolve("build").resolve("libs_fabric")
     }
 
     // add common javadoc to jar
